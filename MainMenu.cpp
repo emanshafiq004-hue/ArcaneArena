@@ -4,9 +4,7 @@
 #include "AssetLoader.h"
 #include <stdexcept>
 
-static constexpr int MENU_ITEM_COUNT = 6;
-
-static const string labels[MENU_ITEM_COUNT] = {
+static const string labels[MainMenu::ITEM_COUNT] = {
 "    REALM OF ECHOES",
 "  IRON FIST",
 "  SHATTER SHIFT",

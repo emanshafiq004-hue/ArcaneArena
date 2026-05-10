@@ -10,19 +10,16 @@
 #include <string>
 #include <fstream>
 
-class GameLogger {
+class GameLogger 
+{
 private:
-    string logFilePath;
+string logFilePath;
 
 public:
-    // Constructor — only needs the log file path, NOT the window
-    GameLogger(const string& filePath);
-    ~GameLogger();
-
-    // showMessage() receives a GameWindow* temporarily for one call... GameLogger does NOT store this pointer ...it has no lasting relationship.
-    // This is ASSOCIATION...uses the object for a brief interaction.
-    void showMessage(GameWindow* gw,const Font& font,const string& message,float seconds);
-
-    // Also writes to log file...demonstrates FILE HANDLING.
-    void logToFile(const string& message);
+// Constructor ï¿½ only needs the log file path, NOT the window
+GameLogger(const string& filePath);
+~GameLogger();
+void showMessage(GameWindow* gw,const Font& font,const string& message,float seconds);// showMessage() receives a GameWindow* temporarily for one call... GameLogger does NOT store this pointer ...it has no lasting relationship.This is ASSOCIATION...uses the object for a brief interaction.
+// Also writes to log file...demonstrates FILE HANDLING.
+void logToFile(const string& message);
 };

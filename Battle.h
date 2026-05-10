@@ -1,4 +1,4 @@
-//Battle.h
+﻿// Battle.h
 #pragma once
 #include "Veilwalker.h"
 #include "Spirit.h"
@@ -37,10 +37,11 @@ private:
 
     void addLog(const string& message);
     void drawBattleUI();
-    void drawGradientBar(float x, float y, float w, float h, int current, int max, Color left, Color right);
+    void drawGradientBar(float x, float y, float w, float h,
+        int current, int max, Color left, Color right);
     void drawActionMenu();
     void drawBattleLog();
-    int playerTurn(BattleAction action);
+    int  playerTurn(BattleAction action);
     void enemyTurn();
     void tryLoadBattleDecor();
 

@@ -1,4 +1,4 @@
-#pragma once
+﻿#pragma once
 #include "GameWindow.h"
 #include "Veilwalker.h"
 #include "Region.h"
@@ -24,26 +24,26 @@ private:
     QuestLog questLog;
     GameLogger logger;
     AudioManager audio;
-    Texture scrollTex;
-    optional<sf::Sprite> scrollSprite0;
-    optional<sf::Sprite> scrollSprite1;
+
+    // ── Static background (one sprite, no scrolling) ──────────────────────
     Texture staticBgTex;
     optional<sf::Sprite> staticBgSpr;
-    bool scrollActive = false;
-    float scrollOffset = 0.f;
+
     bool quitToHub = false;
 
     float centerX() const;
     string upperText(const string& s) const;
     void setupRegions();
     void setupAudio();
-    void tryBindScrollForRegion(int regionIndex);
-    void tryBindScrollForWorldMap();
+
+    // Loads a static cover-fitted background from the first path that succeeds.
     bool loadStaticBackground(const vector<string>& paths);
+    void loadRegionBackground(int regionIndex);   // per-region static BG
+    void loadWorldMapBackground();                // world-map static BG
     void clearStaticBackground();
-    void updateScroll(float dt);
-    void drawScrollBehind();
-    void drawBackdrop();
+
+    void drawBackdrop();                          // draw static BG (no scroll)
+
     void syncSave(int regionIndex, const Region& region);
     string showNameEntryScreen();
     void showStoryScreen();

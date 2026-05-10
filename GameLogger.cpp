@@ -5,22 +5,22 @@
 using namespace std;
 using namespace sf;
 
-GameLogger::GameLogger(const string& filePath) : logFilePath(filePath) {
+GameLogger::GameLogger(const string& filePath) : logFilePath(filePath) 
+{
 ofstream testOpen(filePath, ios::app);
 if (!testOpen.is_open())
-throw runtime_error("GameLogger: Cannot open log file: " + filePath);
+throw runtime_error("GameLogger: Cannot open log file: " + filePath);//concatination
 testOpen.close();
-cout << "[GameLogger] Logger initialized. Log: " << filePath << "\n";
+cout << "[GameLogger] Logger initialized. Log: " << filePath <<endl;
 }
 
-GameLogger::~GameLogger() {
+GameLogger::~GameLogger()
+{
 cout << "[GameLogger] Logger destroyed.\n";
 }
 
-void GameLogger::showMessage(GameWindow* gw,
-const Font& font,
-const string& message,
-float seconds) {
+void GameLogger::showMessage(GameWindow* gw,const Font& font,const string& message,float seconds) 
+{
 if (gw == nullptr)
 throw invalid_argument("GameLogger::showMessage - null window pointer!");
 Text text(font);
