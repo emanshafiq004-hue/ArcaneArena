@@ -1,6 +1,6 @@
 #include "scoreboard.h"
 #include <fstream>
-#include <cstdlib>   // atoi
+#include <cstdlib>   
 using namespace std;
 
 // =======================================================================
@@ -27,7 +27,7 @@ int PlayerRecord::nextRound() const
     if (!r1Done) return 1;
     if (!r2Done) return 2;
     if (!r3Done) return 3;
-    return 4;   // fully complete
+    return 4;   
 }
 
 bool PlayerRecord::isComplete() const
@@ -39,10 +39,7 @@ bool PlayerRecord::isComplete() const
 // =======================================================================
 //  Internal helpers
 // =======================================================================
-//
-// Parse one line of the players file into 'out'.  Returns true on
-// success, false on any malformed input (line skipped by load()).
-//
+
 static bool parseLine(const string& line, PlayerRecord& out)
 {
     if (line.length() == 0) return false;
@@ -56,7 +53,7 @@ static bool parseLine(const string& line, PlayerRecord& out)
     {
         if (i == n || line[i] == '|')
         {
-            if (fieldCount >= 7) return false;       // too many fields
+            if (fieldCount >= 7) return false;
             fields[fieldCount++] = line.substr(fieldStart, i - fieldStart);
             fieldStart = i + 1;
         }
@@ -75,10 +72,10 @@ static bool parseLine(const string& line, PlayerRecord& out)
     return true;
 }
 
-
 // =======================================================================
 //  ScoreBoard
 // =======================================================================
+
 ScoreBoard::ScoreBoard()
 {
     count = 0;
@@ -141,8 +138,6 @@ int ScoreBoard::addOrReplace(const string& name)
     int idx = findIndex(name);
     if (idx >= 0)
     {
-        // Reset existing record's scores (player chose "Start New Game"
-        // with the same name).  Their old run is overwritten.
         players[idx] = PlayerRecord();
         players[idx].name = name;
         return idx;

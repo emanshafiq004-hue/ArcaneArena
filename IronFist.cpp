@@ -1,12 +1,3 @@
-// IronFist.cpp
-// Converted from standalone main.cpp to a module of Arcane Arena.
-// The only structural changes:
-//   1) int main() → void IronFist::run()
-//   2) Window creation → reference from GameWindow (gw.getWindow())
-//   3) window.close() → return  (goes back to Arcane Arena menu)
-//   4) Removed the SetCurrentDirectory block (binding main.cpp handles it)
-//   5) Removed return 0
-
 #include "IronFist.h"
 #include <SFML/Graphics.hpp>
 #include <SFML/Audio.hpp>
@@ -38,7 +29,7 @@ enum GameState
     STATE_END_MENU
 };
 
-// Per-round score: HP%-based.
+
 int calculateScore(int currentHealth, int maxHealth)
 {
     float pct = (float)currentHealth / (float)maxHealth * 100.f;
@@ -50,6 +41,7 @@ int calculateScore(int currentHealth, int maxHealth)
 // ---------------------------------------------------------------
 //  Stage helpers
 // ---------------------------------------------------------------
+
 static void startAtRound(int round, GameState& state,
     Player& player, Creature& creature, Knight& knight, Samurai& samurai,
     CombatState& combat1, CombatState& combat2, CombatState& combat3,
@@ -81,6 +73,7 @@ static void startAtRound(int round, GameState& state,
 // ---------------------------------------------------------------
 //  Filter for live name-input keystrokes.
 // ---------------------------------------------------------------
+
 static bool isAcceptableNameChar(char32_t c)
 {
     if (c == '|') return false;
@@ -94,16 +87,13 @@ static bool isAcceptableNameChar(char32_t c)
 IronFist::IronFist(GameWindow& w) : gw(w) {}
 
 // ===============================================================
-//  run()  —  this is your old main(), almost line-for-line
+//  run()  —  previously it was main()
 // ===============================================================
+
 void IronFist::run()
 {
     srand((unsigned int)time(NULL));
 
-    // *** THE KEY TRICK ***
-    // Instead of creating a new window, grab a reference to the shared one.
-    // Every existing  window.draw / window.clear / window.display  call
-    // works exactly as before — zero search-and-replace needed.
     sf::RenderWindow& window = gw.getWindow();
     window.setFramerateLimit(1300);
 
@@ -120,9 +110,10 @@ void IronFist::run()
     CombatState combat3;
 
     // ----------------------------------------------------------------
-    //  Background layers  (unchanged)
+    //  Background layers 
     // ----------------------------------------------------------------
     // Stage 1
+
     sf::Texture bgMoonTex, bgMountainsTex, bgGraveyardTex;
     bgMoonTex.loadFromFile("Assets/Sprites/Backgrounds/bg-moon.png");
     bgMountainsTex.loadFromFile("Assets/Sprites/Backgrounds/bg-mountains.png");
@@ -165,8 +156,9 @@ void IronFist::run()
         531.f - 235.f * S3_SCALE));
 
     // ----------------------------------------------------------------
-    //  Sound effects  (unchanged)
+    //  Sound effects 
     // ----------------------------------------------------------------
+
     sf::SoundBuffer sbMainAttack, sbMainHit;
     sbMainAttack.loadFromFile("Assets/Sprites/sound-effects/mainCharAttack.mp3");
     sbMainHit.loadFromFile("Assets/Sprites/sound-effects/mainCharGetHit.wav");
@@ -220,21 +212,19 @@ void IronFist::run()
     bool escHeld = false;
 
     // ==============================================================
-    //  GAME LOOP — only 2 changes inside:
-    //    window.close()  →  return
-    //    (that's it)
+    //  GAME LOOP 
     // ==============================================================
     while (window.isOpen())
     {
         // ============================================================
         //  EVENT POLLING
         // ============================================================
+
         while (optional<sf::Event> ev = window.pollEvent())
         {
-            // CHANGED: instead of closing the shared window, just return
-            // to the Arcane Arena main menu.
+         
             if (ev->is<sf::Event::Closed>())
-                return;   // was: window.close();
+                return;  
 
             if (state == STATE_NAME_INPUT)
             {
@@ -248,7 +238,7 @@ void IronFist::run()
                     }
                     else if (c == 13 || c == 10)
                     {
-                        // Enter handled below
+                        
                     }
                     else if (isAcceptableNameChar(c)
                         && (int)nameInput.length() < MAX_NAME_LEN)
@@ -259,17 +249,16 @@ void IronFist::run()
             }
         }
 
-        // Universal ESC release tracker
+       
         bool escDown = sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Escape);
         if (!escDown) escHeld = false;
 
         // ============================================================
-        //  LOGIC  (completely unchanged from your original)
+        //  LOGIC  
         // ============================================================
 
         if (state == STATE_PRESS_START)
         {
-            // CHANGED: ESC on the press-start screen returns to Arcane Arena
             if (escDown && !escHeld)
             {
                 escHeld = true;
@@ -281,7 +270,7 @@ void IronFist::run()
 
         else if (state == STATE_MENU)
         {
-            // CHANGED: ESC on Iron Fist's own menu returns to Arcane Arena
+            
             if (escDown && !escHeld)
             {
                 escHeld = true;
@@ -899,7 +888,4 @@ void IronFist::run()
 
         window.display();
     }
-
-    // No return 0 — this is void, not main().
-    // When this function ends, control goes back to Arcane Arena's menu loop.
 }

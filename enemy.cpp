@@ -192,7 +192,7 @@ const float CREATURE_SCALE = 1.65f;
 const float CREATURE_FLOOR_Y = 382.5f;
 
 Creature::Creature()
-    : Enemy(250, 0.15f, 2.0f, 0.55f, 148, 96, 6, 8, 5)   // hp 120->250
+    : Enemy(250, 0.15f, 2.0f, 0.55f, 148, 96, 6, 8, 5)   
 {
     ATTACK_RANGE = 120.f;
     DETECT_RANGE = 300.f;
@@ -293,7 +293,7 @@ const float KNIGHT_MIN_X = -40.f;
 const float KNIGHT_MAX_X = 530.f;
 
 Knight::Knight()
-    : Enemy(400, 0.15f, 2.0f, 0.55f, FRAME_W, 84, 7, 8, 6)   // hp 200->400
+    : Enemy(400, 0.15f, 2.0f, 0.55f, FRAME_W, 84, 7, 8, 6) 
 {
     ATTACK_RANGE = 120.f;
     DETECT_RANGE = 300.f;
@@ -478,33 +478,6 @@ const float SAMURAI_FLOOR_Y = 291.f;
 const float SAMURAI_MIN_X = -40.f;
 const float SAMURAI_MAX_X = 506.f;
 
-// ----------------------------------------------------------------
-//  attack_var rendering constants
-//
-//  attack_var_2.png is 1344x1024 (7 frames on a 192 px grid)
-//  with the sprite content occupying rows 378-578 (201 px tall)
-//  centred in the canvas.  7 frames total at 192 px each.  Frames
-//  0-2 are idle walk-in poses; the actual attack plays frames 3-6
-//  (2 glitchy frames removed).  frameSpeed raised to 0.09 s/frame
-//  so the 4-frame attack still spans ~0.36 s total.
-//
-//  Scale 0.8 renders the body at ~62x99 px, matching the normal
-//  samurai IDLE body size (60x102 px rendered at SAMURAI_SCALE 3).
-//
-//  AVAR_Y positions the cropped region so the character's feet
-//  (texture row 575, local y 197 within the crop) align with the
-//  IDLE sprite's feet on screen:
-//      idle feet screen y  = SAMURAI_FLOOR_Y + 80 * SAMURAI_SCALE
-//                          = 291 + 240 = 531
-//      AVAR_Y + 197 * 0.8  = 531
-//      AVAR_Y              = 373
-//
-//  AVAR_X_OFFSET centres the (narrower) attack_var frame inside
-//  the same on-screen column as the normal sprite:
-//      normal rendered width = 96  * 3.0 = 288 px
-//      avar   rendered width = 192 * 0.8 = 153.6 px
-//      offset = (288 - 153.6) / 2 = 67.2
-// ----------------------------------------------------------------
 const float AVAR_SCALE = 0.8f;
 const float AVAR_Y = 373.f;
 const float AVAR_FRAME_RENDERED_W = 192.f * AVAR_SCALE;                          // 153.6
@@ -519,7 +492,6 @@ Samurai::Samurai()
     animSpeed = 0.08f;
     hurtFrames = 4;
 
-    // Match the adventurer's gravity for a natural jump arc
     gravity = 0.004f;
 
     idleTexture.loadFromFile("Assets/Sprites/samurai/IDLE.png");
@@ -547,15 +519,12 @@ Samurai::Samurai()
 
 sf::FloatRect Samurai::getBounds() const
 {
-    // The collision box is centred on the same body centre as before but
-    // is 87px wide (was 57px) to prevent the player walking around the
-    // narrow edge and passing through from behind.  Same vertical extent.
     float bx = facingLeft
-        ? worldX + (float)(FRAME_W - 60) * SAMURAI_SCALE   // was FRAME_W-55
-        : worldX + 26.f * SAMURAI_SCALE;                   // was 36.f
+        ? worldX + (float)(FRAME_W - 60) * SAMURAI_SCALE   
+        : worldX + 26.f * SAMURAI_SCALE;                   
     return sf::FloatRect(
         sf::Vector2f(bx, sprite.getPosition().y + 47.f * SAMURAI_SCALE),
-        sf::Vector2f(29.f * SAMURAI_SCALE, 33.f * SAMURAI_SCALE));  // width: was 19.f
+        sf::Vector2f(29.f * SAMURAI_SCALE, 33.f * SAMURAI_SCALE));  
 }
 
 sf::FloatRect Samurai::getAttackBox() const
@@ -575,7 +544,7 @@ sf::FloatRect Samurai::getAttackBox() const
 void Samurai::reset()
 {
     Enemy::reset();
-    gravity = 0.004f;     // re-apply after Enemy::reset() leaves gravity unchanged
+    gravity = 0.004f;     
     worldX = SAMURAI_MAX_X;
     aiState = AI_IDLE;
     usingVariant = false;
@@ -587,17 +556,7 @@ void Samurai::reset()
     updateFacingScale();
 }
 
-// ============================================================
-//  notifyPlayerAttacking
-//
-//  Detects the rising edge of the player's attack input and
-//  triggers a jump dodge with 35% probability.
-//
-//  Horizontal direction: the Samurai leaps AWAY from the player
-//  using facingLeft (which is toward-player) to compute the
-//  opposite direction.  This gives a real backward dash rather
-//  than jumping on the spot.
-// ============================================================
+
 void Samurai::notifyPlayerAttacking(bool isAttacking)
 {
     bool risingEdge = isAttacking && !playerWasAttacking;
@@ -613,14 +572,9 @@ void Samurai::notifyPlayerAttacking(bool isAttacking)
     {
         if ((rand() % 100) < 35)
         {
-            // Same arc as the adventurer (gravity 0.004, velocityY -1.5)
             velocityY = -1.5f;
             onGround = false;
             jumping = true;
-
-            // Dash away from the player:
-            //   facingLeft==true  → player is left  → dodge right (+x)
-            //   facingLeft==false → player is right → dodge left  (-x)
             jumpVelocityX = facingLeft ? 0.3f : -0.3f;
 
             jumpCooldownClock.restart();
@@ -716,12 +670,6 @@ void Samurai::update(sf::Vector2f playerPos)
     {
         // --------------------------------------------------
         //  Pick texture and timing based on attack type
-        //
-        //  ATTACK 1  : 7 frames, 0.08 s/frame (animSpeed)
-        //  attack_var: AVAR_FRAMES frames, 0.09 s/frame
-        //              (starts at AVAR_FIRST_ATTACK_FRAME in
-        //               the texture but currentFrame counts
-        //               from 0; offset applied in draw())
         // --------------------------------------------------
         int   activeFrames;
         float frameSpeed;
@@ -781,20 +729,8 @@ void Samurai::update(sf::Vector2f playerPos)
 
 // ============================================================
 //  Samurai::draw  (overrides Enemy::draw)
-//
-//  When using attack_var the main sprite's texture rect would
-//  point at the wrong area (content lives at rows 378-578, not y=0)
-//  and the full-canvas scale would make the character giant.
-//  A dedicated attackVarSprite with its own crop, scale, and position
-//  is used instead so the character appears at the same on-screen
-//  size and ground level as the normal IDLE/ATTACK 1 sprites.
-//
-//    Frame index in the sheet  = currentFrame + AVAR_FIRST_ATTACK_FRAME
-//    Crop x = (currentFrame + AVAR_FIRST_ATTACK_FRAME) * AVAR_FRAME_W_TEX
-//    Crop y = AVAR_CONTENT_Y (378),  h = AVAR_CONTENT_H (201)
-//    Scale  = AVAR_SCALE (0.8)
-//    Y pos  = AVAR_Y (373) → feet land at screen y 531, same as IDLE
 // ============================================================
+
 void Samurai::draw(sf::RenderWindow& window)
 {
     if (!drawingVariant)

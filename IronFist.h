@@ -1,4 +1,3 @@
-// IronFist.h
 #pragma once
 #include "GameWindow.h"
 #include "player.h"

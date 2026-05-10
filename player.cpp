@@ -143,8 +143,8 @@ Player::Player()
     blockKeyHeld = false;
     blockFrame = 0;
     blockSuccessFrame = 0;
-    blockAnimSpeed = 0.08f;   // entry frame speed
-    blockSuccessAnimSpeed = 0.07f;   // success frame speed
+    blockAnimSpeed = 0.08f;  
+    blockSuccessAnimSpeed = 0.07f;   
 }
 
 // =======================================================================
@@ -302,6 +302,7 @@ void Player::handleInput()
     // L — block.  Holding allowed; releasing ends ENTER/HOLD immediately.
     // SUCCESS is not interrupted by release; once it finishes the code
     // checks blockKeyHeld to decide whether to return to HOLD or NONE.
+
     if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::L))
     {
         if (blockPhase == BlockPhase::NONE && !attacking && !comboing && !stunned)
@@ -322,13 +323,8 @@ void Player::handleInput()
 
 // =======================================================================
 //  update
-//
-//  Block phases here only advance frame counters and state transitions.
-//  No textures / rects on the main sprite are touched while blocking —
-//  the rendering happens separately in draw() through blockSprite /
-//  blockSuccSprite.  Each block branch returns early so the normal
-//  idle/run/attack animation block at the bottom is skipped.
 // =======================================================================
+
 void Player::update()
 {
     // ---- Stun timer ----
@@ -397,12 +393,12 @@ void Player::update()
                 blockPhase = BlockPhase::HOLD;
             }
         }
-        return;   // skip normal animation
+        return;   
     }
 
     if (blockPhase == BlockPhase::HOLD)
     {
-        return;   // draw() shows frame 4 every tick
+        return;  
     }
 
     if (blockPhase == BlockPhase::SUCCESS)
@@ -424,12 +420,13 @@ void Player::update()
                 }
             }
         }
-        return;   // skip normal animation
+        return;   
     }
 
     // ====================================================================
     //  Normal animation: idle / run / attack
     // ====================================================================
+
     int   totalFrames;
     float activeAnimSpeed;
 
@@ -483,6 +480,7 @@ void Player::update()
 // =======================================================================
 //  getAttackBox
 // =======================================================================
+
 sf::FloatRect Player::getAttackBox()
 {
     if (facingRight)
@@ -507,12 +505,8 @@ sf::FloatRect Player::getBounds()
 
 // =======================================================================
 //  draw
-//
-//  In a non-block phase the main sprite is drawn (preserving every
-//  pre-existing behaviour).  In any block phase the dedicated block
-//  sprite is drawn at its own position/scale; the main sprite is
-//  not drawn but still drives physics/collision through update().
 // =======================================================================
+
 void Player::draw(sf::RenderWindow& window)
 {
     if (blockPhase == BlockPhase::NONE)
@@ -521,20 +515,14 @@ void Player::draw(sf::RenderWindow& window)
         return;
     }
 
-    // Track horizontal position with the main sprite so the block
-    // moves with the player.
     float bx = sprite.getPosition().x;
 
-    // Pick which block_progression frame to show.
-    //  ENTER   : frames 0, 1, 2 (entry animation in progress)
-    //  HOLD    : frame 3 (defensive block stance)
-    //  SUCCESS : frame 3 underneath the spark overlay
     int animIdx = (blockPhase == BlockPhase::HOLD || blockPhase == BlockPhase::SUCCESS)
         ? BLOCK_HOLD_FRAME_IDX : blockFrame;
     if (animIdx < 0) animIdx = 0;
     if (animIdx > 3) animIdx = 3;
 
-    int frameW = BP_FRAME_W[animIdx];   // per-frame width, avoids bleed
+    int frameW = BP_FRAME_W[animIdx];   
 
     sf::IntRect bpRect(
         { BP_FRAME_X[animIdx], BP_CONTENT_Y },
@@ -547,7 +535,6 @@ void Player::draw(sf::RenderWindow& window)
     }
     else
     {
-        // Negative x-scale flips horizontally; shift right by on-screen width.
         blockSprite.setScale(sf::Vector2f(-BLOCK_SCALE, BLOCK_SCALE));
         blockSprite.setPosition(sf::Vector2f(
             bx + BLOCK_X_OFFSET + frameW * BLOCK_SCALE, BLOCK_Y));
@@ -555,7 +542,6 @@ void Player::draw(sf::RenderWindow& window)
     blockSprite.setTextureRect(bpRect);
     window.draw(blockSprite);
 
-    // Spark overlay during a successful block
     if (blockPhase == BlockPhase::SUCCESS)
     {
         int succIdx = blockSuccessFrame;
@@ -566,12 +552,9 @@ void Player::draw(sf::RenderWindow& window)
             { BS_FRAME_X[succIdx], BS_CONTENT_Y },
             { BS_CROP_W,           BS_CONTENT_H });
 
-        // The 256x680 success crop is large; scale it down so the
-        // spark frames the (now smaller) character.
-        // The SUCCESS state always shows the hold frame (BP_FRAME_W[3]=180).
-        const float HOLD_W = 180.f;   // BP_FRAME_W[BLOCK_HOLD_FRAME_IDX]
+        const float HOLD_W = 180.f;   
         const float SUCC_SCALE = 0.2f;
-        const float SUCC_W_ON_SCREEN = BS_CROP_W * SUCC_SCALE;   // ~51 px
+        const float SUCC_W_ON_SCREEN = BS_CROP_W * SUCC_SCALE;   
 
         if (facingRight)
         {
@@ -595,6 +578,7 @@ void Player::draw(sf::RenderWindow& window)
 // =======================================================================
 //  pushX
 // =======================================================================
+
 void Player::pushX(float amount)
 {
     sf::Vector2f pos = sprite.getPosition();

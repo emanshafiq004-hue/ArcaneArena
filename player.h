@@ -16,17 +16,6 @@ private:
 
     sf::Sprite  sprite{ idleRightTexture };
 
-    // ----------------------------------------------------------------
-    //  Dedicated block sprites
-    //
-    //  block_progression.png and block_success.png are 1536x1024
-    //  sheets where the character pixels occupy only a small region
-    //  of each cell.  Drawing them through the main sprite (whose
-    //  position/scale are tuned for a 96x80 character) puts that
-    //  content far below the visible window, so a separate sprite
-    //  with its own crop, scale, and y-offset is used instead.
-    //  The main sprite still drives all physics and collision.
-    // ----------------------------------------------------------------
     sf::Sprite  blockSprite{ blockProgressionTexture };
     sf::Sprite  blockSuccSprite{ blockSuccessTexture };
 
@@ -79,6 +68,7 @@ private:
     //  isBlocking() is true during ENTER and HOLD — the window in
     //  which the combat system applies reduced damage.
     // ================================================================
+
     enum class BlockPhase { NONE, ENTER, HOLD, SUCCESS };
 
     BlockPhase blockPhase;
@@ -131,11 +121,12 @@ public:
 
     // True while L is held (ENTER or HOLD). The combat code uses this
     // to decide whether incoming damage should be halved.
+
     bool isBlocking() const
     {
         return blockPhase == BlockPhase::ENTER || blockPhase == BlockPhase::HOLD;
     }
 
-    // Called by combat the instant a blocked hit lands.
+    // Called by combat the moment a blocked hit lands.
     void triggerBlockSuccess();
 };

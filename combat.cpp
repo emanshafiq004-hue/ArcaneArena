@@ -72,6 +72,7 @@ bool checkPlayerHitsEnemy(Player& player, Enemy& enemy, int attackDamage)
 //   the block_success reaction animation is triggered on the player.
 //   Full damage is applied when the player is not blocking.
 // ---------------------------------------------------------------
+
 bool checkEnemyHitsPlayer(Enemy& enemy, Player& player,
     CombatState& state, int attackDamage)
 {
@@ -87,7 +88,7 @@ bool checkEnemyHitsPlayer(Enemy& enemy, Player& player,
     if (player.isBlocking())
     {
         // Block absorbs half the incoming damage.
-        // The minimum applied is 1 so there is always some feedback.
+
         int reducedDamage = attackDamage / 2;
         if (reducedDamage < 1) reducedDamage = 1;
 
@@ -110,6 +111,7 @@ bool checkEnemyHitsPlayer(Enemy& enemy, Player& player,
 // Uses comboHit1Registered so this hit is counted at most once
 // per combo activation.
 // ---------------------------------------------------------------
+
 bool checkPlayerComboPhase1HitsEnemy(Player& player, Enemy& enemy, int attackDamage)
 {
     if (!player.isComboing())              return false;
@@ -131,6 +133,7 @@ bool checkPlayerComboPhase1HitsEnemy(Player& player, Enemy& enemy, int attackDam
 // Uses comboHit2Registered so this hit is counted at most once
 // per combo activation.
 // ---------------------------------------------------------------
+
 bool checkPlayerComboPhase2HitsEnemy(Player& player, Enemy& enemy, int attackDamage)
 {
     if (!player.isComboing())              return false;

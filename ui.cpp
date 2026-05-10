@@ -268,9 +268,7 @@ void drawContinueListScreen(sf::RenderWindow& window, const sf::Font& font,
             18, sf::Color(150, 150, 195), 800.f, 188.f);
         window.draw(sub);
 
-        // Show up to 10 players (one row each).  If there are more,
-        // we still cycle through them via W/S; only the visible window
-        // is drawn.
+
         const int VISIBLE = 10;
         int firstRow = 0;
         if (selectedIndex >= VISIBLE) firstRow = selectedIndex - (VISIBLE - 1);
