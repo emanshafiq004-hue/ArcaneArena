@@ -29,26 +29,26 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v143</PlatformToolset>
+    <PlatformToolset>v145</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -103,17 +103,16 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\SFML-3.0.2-windows-vc17-64-bit\SFML-3.0.2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)External\SFML-3.0.2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\SFML-3.0.2-windows-vc17-64-bit\SFML-3.0.2\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)External\SFML-3.0.2\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>sfml-main-d.lib;sfml-graphics-d.lib;sfml-window-d.lib;sfml-system-d.lib;sfml-audio-d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>
-        xcopy /Y /D "$(SolutionDir)..\SFML-3.0.2-windows-vc17-64-bit\SFML-3.0.2\bin\sfml-*-d-3.dll" "$(OutDir)"
       </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -126,44 +125,42 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>$(SolutionDir)..\SFML-3.0.2-windows-vc17-64-bit\SFML-3.0.2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>$(SolutionDir)External\SFML-3.0.2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>$(SolutionDir)..\SFML-3.0.2-windows-vc17-64-bit\SFML-3.0.2\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>$(SolutionDir)External\SFML-3.0.2\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>sfml-main.lib;sfml-graphics.lib;sfml-window.lib;sfml-system.lib;sfml-audio.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
       <Command>
-        xcopy /Y /D "$(SolutionDir)..\SFML-3.0.2-windows-vc17-64-bit\SFML-3.0.2\bin\sfml-*-3.dll" "$(OutDir)"
       </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
-    <ClCompile Include="..\..\..\Desktop\game_project\Brick_breaker_game\Ball.cpp" />
-    <ClCompile Include="..\..\..\Desktop\game_project\Brick_breaker_game\Brick.cpp" />
-    <ClCompile Include="..\..\..\Desktop\game_project\Brick_breaker_game\GameScreen.cpp" />
-    <ClCompile Include="..\..\..\Desktop\game_project\Brick_breaker_game\Paddle.cpp" />
-    <ClCompile Include="..\..\..\Desktop\game_project\Brick_breaker_game\Scoremanager.cpp" />
-    <ClCompile Include="..\..\..\Desktop\game_project\Brick_breaker_game\shatter.cpp" />
-    <ClCompile Include="..\..\..\Desktop\game_project\Brick_breaker_game\WelcomeScreen.cpp" />
     <ClCompile Include="AssetLoader.cpp" />
     <ClCompile Include="AudioManager.cpp" />
     <ClCompile Include="Ability.cpp" />
     <ClCompile Include="Battle.cpp" />
+    <ClCompile Include="combat.cpp" />
+    <ClCompile Include="enemy.cpp" />
     <ClCompile Include="FileManager.cpp" />
     <ClCompile Include="GameLogger.cpp" />
     <ClCompile Include="GameWindow.cpp" />
     <ClCompile Include="Inventory.cpp" />
+    <ClCompile Include="IronFist.cpp" />
     <ClCompile Include="Item.cpp" />
     <ClCompile Include="main.cpp" />
     <ClCompile Include="MainMenu.cpp" />
+    <ClCompile Include="player.cpp" />
     <ClCompile Include="QuestLog.cpp" />
     <ClCompile Include="RealmOfEchoes.cpp" />
     <ClCompile Include="Region.cpp" />
+    <ClCompile Include="scoreboard.cpp" />
     <ClCompile Include="ScoresStatus.cpp" />
     <ClCompile Include="Spirit.cpp" />
+    <ClCompile Include="ui.cpp" />
     <ClCompile Include="Veilwalker.cpp" />
     <ClCompile Include="WelcomeScreen.cpp" />
   </ItemGroup>
@@ -173,11 +170,12 @@
     <ClInclude Include="..\..\..\Desktop\game_project\Brick_breaker_game\Gamescreen.h" />
     <ClInclude Include="..\..\..\Desktop\game_project\Brick_breaker_game\Paddle.h" />
     <ClInclude Include="..\..\..\Desktop\game_project\Brick_breaker_game\Scoremanager.h" />
-    <ClInclude Include="..\..\..\Desktop\game_project\Brick_breaker_game\WelcomeScreen.h" />
     <ClInclude Include="AssetLoader.h" />
     <ClInclude Include="AudioManager.h" />
     <ClInclude Include="Ability.h" />
     <ClInclude Include="Battle.h" />
+    <ClInclude Include="combat.h" />
+    <ClInclude Include="enemy.h" />
     <ClInclude Include="FileManager.h" />
     <ClInclude Include="GameLogger.h" />
     <ClInclude Include="GameWindow.h" />
@@ -185,14 +183,17 @@
     <ClInclude Include="IronFist.h" />
     <ClInclude Include="Item.h" />
     <ClInclude Include="MainMenu.h" />
+    <ClInclude Include="player.h" />
     <ClInclude Include="QuestLog.h" />
     <ClInclude Include="RealmOfEchoes.h" />
     <ClInclude Include="Region.h" />
+    <ClInclude Include="scoreboard.h" />
     <ClInclude Include="ScoresStatus.h" />
     <ClInclude Include="ShatterShift.h" />
     <ClInclude Include="SkySurge.h" />
     <ClInclude Include="Spirit.h" />
     <ClInclude Include="Spirits.h" />
+    <ClInclude Include="ui.h" />
     <ClInclude Include="Veilwalker.h" />
     <ClInclude Include="WelcomeScreen.h" />
   </ItemGroup>

@@ -81,26 +81,23 @@
     <ClCompile Include="AudioManager.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Desktop\game_project\Brick_breaker_game\Ball.cpp">
-      <Filter>ShatterShift</Filter>
+    <ClCompile Include="IronFist.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Desktop\game_project\Brick_breaker_game\Brick.cpp">
-      <Filter>ShatterShift</Filter>
+    <ClCompile Include="combat.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Desktop\game_project\Brick_breaker_game\GameScreen.cpp">
-      <Filter>ShatterShift</Filter>
+    <ClCompile Include="enemy.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Desktop\game_project\Brick_breaker_game\Paddle.cpp">
-      <Filter>ShatterShift</Filter>
+    <ClCompile Include="player.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Desktop\game_project\Brick_breaker_game\Scoremanager.cpp">
-      <Filter>ShatterShift</Filter>
+    <ClCompile Include="scoreboard.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="..\..\..\Desktop\game_project\Brick_breaker_game\shatter.cpp">
-      <Filter>ShatterShift</Filter>
-    </ClCompile>
-    <ClCompile Include="..\..\..\Desktop\game_project\Brick_breaker_game\WelcomeScreen.cpp">
-      <Filter>ShatterShift</Filter>
+    <ClCompile Include="ui.cpp">
+      <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
@@ -182,8 +179,20 @@
     <ClInclude Include="..\..\..\Desktop\game_project\Brick_breaker_game\Scoremanager.h">
       <Filter>ShatterShift</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Desktop\game_project\Brick_breaker_game\WelcomeScreen.h">
-      <Filter>ShatterShift</Filter>
+    <ClInclude Include="combat.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="enemy.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="player.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="scoreboard.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="ui.h">
+      <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
