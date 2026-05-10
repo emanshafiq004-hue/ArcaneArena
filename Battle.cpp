@@ -289,7 +289,7 @@ void Battle::drawBattleUI() {
     // Shows progress toward the next level using a cyan-to-gold gradient.
     {
         const int  currentXP = player.getXP();
-        const int  xpForNext = player.getXPToNextLevel(); // implement if missing
+        const int  xpForNext = player.getXPToNext(); // implement if missing
         drawGradientBar(28.f, vh - 154.f, 260.f, 10.f,
             currentXP, xpForNext,
             Color(0, 180, 220), Color(255, 220, 60));
