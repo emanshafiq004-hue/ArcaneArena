@@ -113,7 +113,7 @@
     </Link>
     <PostBuildEvent>
       <Command>
-        xcopy /Y /D &quot;$(SolutionDir)..\SFML-3.0.2-windows-vc17-64-bit\SFML-3.0.2\bin\sfml-*-d-3.dll&quot; &quot;$(OutDir)&quot;
+        xcopy /Y /D "$(SolutionDir)..\SFML-3.0.2-windows-vc17-64-bit\SFML-3.0.2\bin\sfml-*-d-3.dll" "$(OutDir)"
       </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
@@ -136,11 +136,18 @@
     </Link>
     <PostBuildEvent>
       <Command>
-        xcopy /Y /D &quot;$(SolutionDir)..\SFML-3.0.2-windows-vc17-64-bit\SFML-3.0.2\bin\sfml-*-3.dll&quot; &quot;$(OutDir)&quot;
+        xcopy /Y /D "$(SolutionDir)..\SFML-3.0.2-windows-vc17-64-bit\SFML-3.0.2\bin\sfml-*-3.dll" "$(OutDir)"
       </Command>
     </PostBuildEvent>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\Desktop\game_project\Brick_breaker_game\Ball.cpp" />
+    <ClCompile Include="..\..\..\Desktop\game_project\Brick_breaker_game\Brick.cpp" />
+    <ClCompile Include="..\..\..\Desktop\game_project\Brick_breaker_game\GameScreen.cpp" />
+    <ClCompile Include="..\..\..\Desktop\game_project\Brick_breaker_game\Paddle.cpp" />
+    <ClCompile Include="..\..\..\Desktop\game_project\Brick_breaker_game\Scoremanager.cpp" />
+    <ClCompile Include="..\..\..\Desktop\game_project\Brick_breaker_game\shatter.cpp" />
+    <ClCompile Include="..\..\..\Desktop\game_project\Brick_breaker_game\WelcomeScreen.cpp" />
     <ClCompile Include="AssetLoader.cpp" />
     <ClCompile Include="AudioManager.cpp" />
     <ClCompile Include="Ability.cpp" />
@@ -161,6 +168,12 @@
     <ClCompile Include="WelcomeScreen.cpp" />
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="..\..\..\Desktop\game_project\Brick_breaker_game\Ball.h" />
+    <ClInclude Include="..\..\..\Desktop\game_project\Brick_breaker_game\Brick.h" />
+    <ClInclude Include="..\..\..\Desktop\game_project\Brick_breaker_game\Gamescreen.h" />
+    <ClInclude Include="..\..\..\Desktop\game_project\Brick_breaker_game\Paddle.h" />
+    <ClInclude Include="..\..\..\Desktop\game_project\Brick_breaker_game\Scoremanager.h" />
+    <ClInclude Include="..\..\..\Desktop\game_project\Brick_breaker_game\WelcomeScreen.h" />
     <ClInclude Include="AssetLoader.h" />
     <ClInclude Include="AudioManager.h" />
     <ClInclude Include="Ability.h" />

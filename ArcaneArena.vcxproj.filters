@@ -75,6 +75,33 @@
     <ClCompile Include="GameLogger.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="AssetLoader.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="AudioManager.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Desktop\game_project\Brick_breaker_game\Ball.cpp">
+      <Filter>ShatterShift</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Desktop\game_project\Brick_breaker_game\Brick.cpp">
+      <Filter>ShatterShift</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Desktop\game_project\Brick_breaker_game\GameScreen.cpp">
+      <Filter>ShatterShift</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Desktop\game_project\Brick_breaker_game\Paddle.cpp">
+      <Filter>ShatterShift</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Desktop\game_project\Brick_breaker_game\Scoremanager.cpp">
+      <Filter>ShatterShift</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Desktop\game_project\Brick_breaker_game\shatter.cpp">
+      <Filter>ShatterShift</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\Desktop\game_project\Brick_breaker_game\WelcomeScreen.cpp">
+      <Filter>ShatterShift</Filter>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameWindow.h">
@@ -133,6 +160,30 @@
     </ClInclude>
     <ClInclude Include="GameLogger.h">
       <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AssetLoader.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="AudioManager.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Desktop\game_project\Brick_breaker_game\Ball.h">
+      <Filter>ShatterShift</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Desktop\game_project\Brick_breaker_game\Brick.h">
+      <Filter>ShatterShift</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Desktop\game_project\Brick_breaker_game\Gamescreen.h">
+      <Filter>ShatterShift</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Desktop\game_project\Brick_breaker_game\Paddle.h">
+      <Filter>ShatterShift</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Desktop\game_project\Brick_breaker_game\Scoremanager.h">
+      <Filter>ShatterShift</Filter>
+    </ClInclude>
+    <ClInclude Include="..\..\..\Desktop\game_project\Brick_breaker_game\WelcomeScreen.h">
+      <Filter>ShatterShift</Filter>
     </ClInclude>
   </ItemGroup>
 </Project>
