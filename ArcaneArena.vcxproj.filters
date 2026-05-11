@@ -99,6 +99,25 @@
     <ClCompile Include="ui.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="Entities.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Globals.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Managers.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Obstacles.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="Renderer.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="SkySurgeGame.cpp">
+      <Filter>Source Files</Filter>
+      <ExcludedFromBuild>true</ExcludedFromBuild>
+    </ClCompile>
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="GameWindow.h">
@@ -164,21 +183,6 @@
     <ClInclude Include="AudioManager.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="..\..\..\Desktop\game_project\Brick_breaker_game\Ball.h">
-      <Filter>ShatterShift</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Desktop\game_project\Brick_breaker_game\Brick.h">
-      <Filter>ShatterShift</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Desktop\game_project\Brick_breaker_game\Gamescreen.h">
-      <Filter>ShatterShift</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Desktop\game_project\Brick_breaker_game\Paddle.h">
-      <Filter>ShatterShift</Filter>
-    </ClInclude>
-    <ClInclude Include="..\..\..\Desktop\game_project\Brick_breaker_game\Scoremanager.h">
-      <Filter>ShatterShift</Filter>
-    </ClInclude>
     <ClInclude Include="combat.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -194,5 +198,24 @@
     <ClInclude Include="ui.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="Entities.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Globals.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Managers.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Obstacles.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="Renderer.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Text Include="highscores.txt" />
+    <Text Include="settings.txt" />
   </ItemGroup>
 </Project>

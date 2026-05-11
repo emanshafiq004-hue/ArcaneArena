@@ -3,39 +3,341 @@
 #pragma once
 #include "GameWindow.h"
 #include <stdexcept>
-
+#include "Renderer.h"
+#include <cctype>
 class SkySurge 
 {
 private:
 GameWindow& gw;
-Font font;
+AudioManager& Audio;
 public:
-SkySurge(GameWindow& w):gw(w) 
-{
-if(!font.openFromFile("assets/font/Philosopher-Bold.ttf"))
-throw runtime_error("SkySurge: Cannot load font!");
-gw.setInterface(Color(5,10,35),"Sky Surge - Coming Soon....");
-}
-void run() 
-{
-Text t(font);
-t.setString("Sky Surge\n\nComing Soon!\n\nPress ESC to return.");
-t.setCharacterSize(32);
-t.setFillColor(Color(0,200,255));
-t.setPosition({200.f,250.f});
-while(gw.isOpen())
-{
-while(auto event=gw.pollEvent()) 
-{
-if (event->is<Event::Closed>())
-gw.getWindow().close();
-if(auto* key=event->getIf<Event::KeyPressed>())
-if (key->code==Keyboard::Key::Escape) 
-return;
-}
-gw.clear();
-gw.getWindow().draw(t);
-gw.display();
-}
-}
+	SkySurge(GameWindow& w,AudioManager& audio) :gw(w),Audio(audio)
+	{}
+    void run()
+    {
+        sf::RenderWindow& window = gw.getWindow();
+        window.setFramerateLimit(60);
+        gw.setIconFromFile("Assets/icon.jpeg");
+
+        //________________Font_______________________
+        sf::Font font;
+        bool fontOk = false;
+        try {
+            if (!font.openFromFile("Font/Cinzel-Bold.ttf"))
+                throw std::runtime_error("Font not found");
+            fontOk = true;
+        }
+        catch (const std::exception&) { fontOk = false; }
+
+        //_________________Drone Texture____________________________
+        sf::Texture droneTex;
+        try {
+            if (!droneTex.loadFromFile("Assets/Bird.png"))
+                throw std::runtime_error("Bird.png not found");
+        }
+        catch (...) {
+            sf::Image img(sf::Vector2u(40u, 24u), sf::Color(0, 220, 255, 255));
+            (void)droneTex.loadFromImage(img);
+        }
+
+        //_________________Core Systems_________________________
+        ParticleSystem  ps(400);
+        Drone           drone(droneTex, ps);
+        CityBackground  city;
+        GameWorld       world;
+        ScoreManager    sm;
+        FileManager     fm;
+        UIRenderer      ui(window, font, fontOk);
+
+        GameStats::reset();
+        sm.setBest(fm.getBestScoreFromFile());
+        FileManager::Settings settings = fm.loadSettings();
+
+        //______________________Audio_________________________
+        Audio.preloadOptional("coin", "Assets/GetCoin.wav");
+        Audio.preloadOptional("gameover", "Assets/GameOver.wav");
+        Audio.PlayMusic("Assets/Background.mp3", settings.soundOn ? 40.f : 0.f);
+
+        //______________________Starfield___________________________
+        std::vector<Star> stars(120);
+        for (auto& s : stars) {
+            s.pos = Vec2(randRange(0.f, BASE_W), randRange(0.f, BASE_H));
+            s.speed = randRange(20.f, 80.f);
+            s.brightness = randRange(100.f, 255.f);
+            s.size = randRange(0.5f, 2.f);
+        }
+
+        //_________________Buttons________________________
+        Button btnPlay(300.f, 240.f, 200.f, 46.f, "PLAY");
+        Button btnHigh(300.f, 298.f, 200.f, 46.f, "HIGH SCORES");
+        Button btnSet(300.f, 356.f, 200.f, 46.f, "SETTINGS");
+        Button btnExit(300.f, 414.f, 200.f, 46.f, "EXIT");
+        Button btnRetry(210.f, 380.f, 170.f, 46.f, "RETRY");
+        Button btnMenu2(420.f, 380.f, 170.f, 46.f, "MENU");
+        Button btnConfirm(310.f, 340.f, 180.f, 46.f, "START GAME");
+        Button btnBackHS(320.f, 500.f, 160.f, 46.f, "BACK");
+        Button btnSnd(300.f, 280.f, 200.f, 46.f, settings.soundOn ? "SOUND: ON" : "SOUND: OFF");
+        Button btnBackSet(320.f, 360.f, 160.f, 46.f, "BACK");
+
+        // Pause button area (top-right corner)
+        sf::FloatRect pauseRect = makeRect(BASE_W - 50.f, 6.f, 38.f, 32.f);
+
+        //___________________Game State__________________________
+        ::State       state = ::State::Menu;
+        std::string playerName = "";
+        float       countdownTimer = 3.f;
+        float       totalTime = 0.f;
+        bool        paused = false;
+
+        auto resetGame = [&]() {
+            world.clear();
+            drone.reset();
+            sm.reset(fm.getBestScoreFromFile());
+            city.setSpeed(180.f);
+            countdownTimer = 3.f;
+            paused = false;
+            GameStats::reset();
+
+            // Restart background music on retry
+            Audio.music.stop();
+            Audio.music.play();
+        };
+
+        sf::Clock clock;
+        while (window.isOpen()) {
+            float dt = clock.restart().asSeconds();
+            if (dt > 0.05f) dt = 0.05f;
+            totalTime += dt;
+
+            sf::View gameView = getLetterboxView(
+                (float)window.getSize().x,
+                (float)window.getSize().y);
+            window.setView(gameView);
+            sf::Vector2f mp = window.mapPixelToCoords(
+                sf::Mouse::getPosition(window), gameView);
+
+            //________________________EVENTS_______________________
+            while (auto ev = window.pollEvent()) {
+
+                if (ev->is<sf::Event::Closed>()) {
+                    window.close();
+                    break;
+                }
+
+                if (auto* res = ev->getIf<sf::Event::Resized>()) {
+                    window.setView(getLetterboxView(
+                        (float)res->size.x, (float)res->size.y));
+                }
+
+                if (auto* kr = ev->getIf<sf::Event::KeyPressed>()) {
+                    // Thrust
+                    if (state == ::State::Playing && !paused &&
+                        kr->code == sf::Keyboard::Key::Space)
+                        drone.thrust();
+
+                    // Pause with Escape key
+                    if (state == ::State::Playing &&
+                        kr->code == sf::Keyboard::Key::Escape)
+                        paused = !paused;
+
+                    if (paused)
+                        Audio.music.pause();
+                    else
+                        Audio.music.play();
+
+                    // Name entry keys
+                    if (state == ::State::NameEntry) {
+                        if (kr->code == sf::Keyboard::Key::Backspace &&
+                            !playerName.empty())
+                            playerName.pop_back();
+                        if (kr->code == sf::Keyboard::Key::Enter &&
+                            !playerName.empty()) {
+                            resetGame();
+                            state = ::State::Countdown;
+                        }
+                    }
+                }
+
+                if (auto* tc = ev->getIf<sf::Event::TextEntered>()) {
+                    if (state == ::State::NameEntry &&
+                        playerName.size() < 12)
+                    {
+                        char c = static_cast<char>(tc->unicode);
+                        if (std::isalpha((unsigned char)c))  // only alphabets allowed
+                            playerName += c;
+                    }
+                }
+
+                if (auto* mb = ev->getIf<sf::Event::MouseButtonPressed>()) {
+                    sf::Vector2f p = window.mapPixelToCoords(mb->position, gameView);
+
+                    // Thrust on click
+                    if (state == ::State::Playing && !paused)
+                        drone.thrust();
+
+                    // Pause button click (top-right)
+                    if (state == ::State::Playing && pauseRect.contains(p)) {
+                        paused = !paused;
+                        if (paused) Audio.music.pause();
+                        else        Audio.music.play();
+                    }
+
+                    // Name entry confirm
+                    if (state == ::State::NameEntry &&
+                        btnConfirm.rect.contains(p) &&
+                        !playerName.empty()) {
+                        resetGame();
+                        state = ::State::Countdown;
+                    }
+
+                    // Main menu
+                    if (state == ::State::Menu) {
+                        if (btnPlay.rect.contains(p))
+                            state = ::State::NameEntry;   // ask name first
+                        if (btnHigh.rect.contains(p)) state = ::State::HighScore;
+                        if (btnSet.rect.contains(p))  state = ::State::Settings;
+                        if (btnExit.rect.contains(p)) window.close();
+                    }
+
+                    // Dead screen
+                    if (state == ::State::Dead) {
+                        if (btnRetry.rect.contains(p)) {
+                            resetGame();
+                            state = ::State::Countdown;
+                        }
+                        if (btnMenu2.rect.contains(p))
+                            state = ::State::Menu;
+                    }
+
+                    // High score
+                    if (state == ::State::HighScore &&
+                        btnBackHS.rect.contains(p))
+                        state = ::State::Menu;
+
+                    // Settings
+                    if (state == ::State::Settings) {
+                        if (btnSnd.rect.contains(p)) {
+                            settings.soundOn = !settings.soundOn;
+                            fm.saveSettings(settings);
+                            btnSnd.label = settings.soundOn ? "SOUND: ON" : "SOUND: OFF";
+
+
+                            if (settings.soundOn) {
+                                Audio.music.setVolume(40.f);
+                            }
+                            else {
+                                Audio.music.setVolume(0.f);
+                            }
+                        }
+                        if (btnBackSet.rect.contains(p))
+                            state = ::State::Menu;
+                    }
+                }
+
+            } // end pollEvent
+
+            //____________________UPDATE____________________________
+            for (auto& s : stars) {
+                s.pos.x -= s.speed * dt;
+                if (s.pos.x < 0.f) {
+                    s.pos.x = BASE_W;
+                    s.pos.y = randRange(0.f, BASE_H);
+                }
+            }
+
+            if (state == ::State::Countdown) {
+                city.update(dt);
+                countdownTimer -= dt;
+                if (countdownTimer <= 0.f)
+                    state = ::State::Playing;
+            }
+
+            // Only update game logic when not paused
+            if (state == ::State::Playing && !paused) {
+                float spd = sm.scrollSpeed();
+                city.setSpeed(spd);
+                city.update(dt);
+                sm.update(dt);
+
+                world.update(dt, spd, sm);
+                drone.update(dt);
+                ps.update(dt);
+
+                world.checkCollisions(drone, sm, ps);
+                if (world.coinCollected && settings.soundOn)
+                    Audio.playOptional("coin", 90.f);
+
+                if (drone.isDead()) {
+                    if (sm.getScore() > sm.getBest())
+                        sm.setBest(sm.getScore());
+                    fm.addScore(playerName, sm.getScore());
+
+                    Audio.music.stop();
+                    if (settings.soundOn)
+                        Audio.playOptional("gameover", 90.f);
+
+                    state = ::State::Dead;
+                }
+            }
+
+            //_________________________DRAW______________________________
+            window.clear(COL_BG_TOP);
+
+
+            ui.drawStars(stars, totalTime);
+            city.draw(window);
+
+            if (state == ::State::Playing ||
+                state == ::State::Countdown ||
+                state == ::State::Dead)
+            {
+                world.draw(window);
+                ps.draw(window);
+                drone.draw(window);
+                ui.drawHUD(sm, totalTime);
+
+                // Pause button always visible during gameplay
+                if (state == ::State::Playing)
+                    ui.drawPauseButton(paused, mp);
+
+                // Paused overlay
+                if (paused) {
+                    sf::RectangleShape overlay(sf::Vector2f(BASE_W, BASE_H));
+                    overlay.setFillColor(sf::Color(0, 0, 0, 120));
+                    window.draw(overlay);
+                    ui.drawText("PAUSED", BASE_W / 2.f, BASE_H / 2.f - 20.f,
+                        42, COL_HL, true);
+                    ui.drawText("Click || or press Esc to resume",
+                        BASE_W / 2.f, BASE_H / 2.f + 30.f,
+                        16, sf::Color(160, 220, 255, 200), true);
+                }
+            }
+
+            switch (state) {
+            case ::State::Menu:
+                ui.drawMenu(sm, totalTime, totalTime,
+                    btnPlay, btnHigh, btnSet, btnExit, mp);
+                break;
+            case ::State::NameEntry:
+                ui.drawNameEntry(sm, playerName, totalTime, btnConfirm, mp);
+                break;
+            case ::State::Countdown:
+                ui.drawCountdown(countdownTimer);
+                break;
+            case ::State::Dead:
+                ui.drawDead(sm, totalTime, btnRetry, btnMenu2, mp);
+                break;
+            case ::State::HighScore:
+                ui.drawHighScores(fm, btnBackHS, mp);
+                break;
+            case ::State::Settings:
+                ui.drawSettings(settings, btnSnd, btnBackSet, mp);
+                break;
+            default: break;
+            }
+
+            window.display();
+
+        }
+    }
 };

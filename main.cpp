@@ -67,7 +67,7 @@ break;
 }
 case 4: 
 {
-SkySurge skySurge(gameWindow); 
+SkySurge skySurge(gameWindow, gameWindow.getAudio()); 
 skySurge.run(); 
 break; 
 } 
