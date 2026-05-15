@@ -55,18 +55,21 @@ break;
 }
 case 2: 
 { 
+gameWindow.getAudio().Stop();
 IronFist ironFist(gameWindow); 
 ironFist.run(); 
 break; 
 }
 case 3: 
 { 
+gameWindow.getAudio().Stop();
 ShatterShift shatter(gameWindow); 
 shatter.run();  
 break; 
 }
 case 4: 
 {
+gameWindow.getAudio().Stop();
 SkySurge skySurge(gameWindow, gameWindow.getAudio()); 
 skySurge.run(); 
 break; 
@@ -79,8 +82,10 @@ break;
 }
 case 0:
 default:
-running=false; 
+{
+running = false;
 break;
+}
 }
 }
 }

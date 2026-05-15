@@ -94,6 +94,9 @@ void IronFist::run()
 {
     srand((unsigned int)time(NULL));
 
+    gw.setInterface(Color(50, 50, 50), "Iron Fist");
+    gw.setIconFromFile("assets/Sprites/icon/iron_fist.png");
+
     sf::RenderWindow& window = gw.getWindow();
     window.setFramerateLimit(1300);
 
