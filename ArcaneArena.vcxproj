@@ -103,12 +103,12 @@
       <PreprocessorDefinitions>_DEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>C:\Users\FriendS\OneDrive\Desktop\ArcaneArena\SFML\SFML-3.0.2\include;C:\Users\user\OneDrive\Desktop\ArcaneArena\SFML-3.0.2-windows-vc17-64-bit\SFML-3.0.2\include;$(SolutionDir)External\SFML-3.0.2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Ctrend.pk\Desktop\ArcaneArena\SFML-3.0.2\include;C:\Users\FriendS\OneDrive\Desktop\ArcaneArena\SFML\SFML-3.0.2\include;C:\Users\user\OneDrive\Desktop\ArcaneArena\SFML-3.0.2-windows-vc17-64-bit\SFML-3.0.2\include;$(SolutionDir)External\SFML-3.0.2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Users\FriendS\OneDrive\Desktop\ArcaneArena\SFML\SFML-3.0.2\lib;C:\Users\user\OneDrive\Desktop\ArcaneArena\SFML-3.0.2-windows-vc17-64-bit\SFML-3.0.2\lib;$(SolutionDir)External\SFML-3.0.2\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Users\Ctrend.pk\Desktop\ArcaneArena\SFML-3.0.2\lib;C:\Users\FriendS\OneDrive\Desktop\ArcaneArena\SFML\SFML-3.0.2\lib;C:\Users\user\OneDrive\Desktop\ArcaneArena\SFML-3.0.2-windows-vc17-64-bit\SFML-3.0.2\lib;$(SolutionDir)External\SFML-3.0.2\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>sfml-main-d.lib;sfml-graphics-d.lib;sfml-window-d.lib;sfml-system-d.lib;sfml-audio-d.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
@@ -125,12 +125,12 @@
       <PreprocessorDefinitions>NDEBUG;_CONSOLE;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <ConformanceMode>true</ConformanceMode>
       <LanguageStandard>stdcpp20</LanguageStandard>
-      <AdditionalIncludeDirectories>C:\Users\FriendS\OneDrive\Desktop\ArcaneArena\SFML\SFML-3.0.2\include;C:\Users\user\OneDrive\Desktop\ArcaneArena\SFML-3.0.2-windows-vc17-64-bit\SFML-3.0.2\include;$(SolutionDir)External\SFML-3.0.2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>C:\Users\Ctrend.pk\Desktop\ArcaneArena\SFML-3.0.2\include;C:\Users\FriendS\OneDrive\Desktop\ArcaneArena\SFML\SFML-3.0.2\include;C:\Users\user\OneDrive\Desktop\ArcaneArena\SFML-3.0.2-windows-vc17-64-bit\SFML-3.0.2\include;$(SolutionDir)External\SFML-3.0.2\include;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>
       <GenerateDebugInformation>true</GenerateDebugInformation>
-      <AdditionalLibraryDirectories>C:\Users\FriendS\OneDrive\Desktop\ArcaneArena\SFML\SFML-3.0.2\lib;C:\Users\user\OneDrive\Desktop\ArcaneArena\SFML-3.0.2-windows-vc17-64-bit\SFML-3.0.2\lib;$(SolutionDir)External\SFML-3.0.2\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
+      <AdditionalLibraryDirectories>C:\Users\Ctrend.pk\Desktop\ArcaneArena\SFML-3.0.2\lib;C:\Users\FriendS\OneDrive\Desktop\ArcaneArena\SFML\SFML-3.0.2\lib;C:\Users\user\OneDrive\Desktop\ArcaneArena\SFML-3.0.2-windows-vc17-64-bit\SFML-3.0.2\lib;$(SolutionDir)External\SFML-3.0.2\lib;%(AdditionalLibraryDirectories)</AdditionalLibraryDirectories>
       <AdditionalDependencies>sfml-main.lib;sfml-graphics.lib;sfml-window.lib;sfml-system.lib;sfml-audio.lib;%(AdditionalDependencies)</AdditionalDependencies>
     </Link>
     <PostBuildEvent>
@@ -142,12 +142,15 @@
     <ClCompile Include="AssetLoader.cpp" />
     <ClCompile Include="AudioManager.cpp" />
     <ClCompile Include="Ability.cpp" />
+    <ClCompile Include="Ball.cpp" />
     <ClCompile Include="Battle.cpp" />
+    <ClCompile Include="Brick.cpp" />
     <ClCompile Include="combat.cpp" />
     <ClCompile Include="enemy.cpp" />
     <ClCompile Include="Entities.cpp" />
     <ClCompile Include="FileManager.cpp" />
     <ClCompile Include="GameLogger.cpp" />
+    <ClCompile Include="GameScreen.cpp" />
     <ClCompile Include="GameWindow.cpp" />
     <ClCompile Include="Globals.cpp" />
     <ClCompile Include="Inventory.cpp" />
@@ -157,6 +160,7 @@
     <ClCompile Include="MainMenu.cpp" />
     <ClCompile Include="Managers.cpp" />
     <ClCompile Include="Obstacles.cpp" />
+    <ClCompile Include="Paddle.cpp" />
     <ClCompile Include="player.cpp" />
     <ClCompile Include="QuestLog.cpp" />
     <ClCompile Include="RealmOfEchoes.cpp" />
@@ -164,6 +168,8 @@
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="scoreboard.cpp" />
     <ClCompile Include="ScoresStatus.cpp" />
+    <ClCompile Include="ScoreStorage.cpp" />
+    <ClCompile Include="ShatterWelcome.cpp" />
     <ClCompile Include="SkySurgeGame.cpp">
       <ExcludedFromBuild>true</ExcludedFromBuild>
     </ClCompile>
@@ -176,12 +182,15 @@
     <ClInclude Include="AssetLoader.h" />
     <ClInclude Include="AudioManager.h" />
     <ClInclude Include="Ability.h" />
+    <ClInclude Include="Ball.h" />
     <ClInclude Include="Battle.h" />
+    <ClInclude Include="Brick.h" />
     <ClInclude Include="combat.h" />
     <ClInclude Include="enemy.h" />
     <ClInclude Include="Entities.h" />
     <ClInclude Include="FileManager.h" />
     <ClInclude Include="GameLogger.h" />
+    <ClInclude Include="Gamescreen.h" />
     <ClInclude Include="GameWindow.h" />
     <ClInclude Include="Globals.h" />
     <ClInclude Include="Inventory.h" />
@@ -190,6 +199,7 @@
     <ClInclude Include="MainMenu.h" />
     <ClInclude Include="Managers.h" />
     <ClInclude Include="Obstacles.h" />
+    <ClInclude Include="Paddle.h" />
     <ClInclude Include="player.h" />
     <ClInclude Include="QuestLog.h" />
     <ClInclude Include="RealmOfEchoes.h" />
@@ -197,7 +207,9 @@
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="scoreboard.h" />
     <ClInclude Include="ScoresStatus.h" />
+    <ClInclude Include="ScoreStorage.h" />
     <ClInclude Include="ShatterShift.h" />
+    <ClInclude Include="ShatterWelcome.h" />
     <ClInclude Include="SkySurge.h" />
     <ClInclude Include="Spirit.h" />
     <ClInclude Include="Spirits.h" />
@@ -208,6 +220,7 @@
   <ItemGroup>
     <Text Include="highscores.txt" />
     <Text Include="settings.txt" />
+    <Text Include="shattershift_scores.txt" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">
