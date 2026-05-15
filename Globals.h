@@ -168,3 +168,16 @@ public:
     void  setActive(bool a) { active_ = a; }
     void  setPos(Vec2 p) { pos_ = p; }
 };
+
+//Globals.h provides :
+//   Constants  -> used by every file            
+//   Colours    -> used by every drawing file    
+//   Vec2       -> used for every position / vel   
+//   randRange  -> used for all randomness       
+//   makeRect   -> used for all collisions       
+//   ObjectPool -> used by ParticleSystem        
+//   GameStats  -> updated by Drone + Score      
+//   IDrawable  -> interface for all objects     
+//   IUpdatable -> interface for all objects     
+//   GameObject -> base for Drone, Barrier, etc    
+//
