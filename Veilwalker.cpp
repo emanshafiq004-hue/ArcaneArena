@@ -10,6 +10,23 @@ Veilwalker::Veilwalker(const string& playerName):name(playerName),level(1),hp(10
 {
 abilities.emplace_back("Spirit Strike",10,25,"Channel your veil energy into a focused strike.");
 cout<<"[Veilwalker] "<<name<< "enters the Veillands!\n";
+    // ---- Load sprite sheet for Veilwalker ----
+std::unordered_map<CharacterState, std::vector<int>> vwAnims;
+// Example layout: row 0: idle (frames 0-4), row 1: walk (5-10), row 2: attack (11-15), etc.
+// The user must verify the actual indices.
+vwAnims[CharacterState::Idle] = { 0,1,2,3,4 };
+vwAnims[CharacterState::Walk] = { 6,7,8,9,10,11 };
+vwAnims[CharacterState::Attack] = { 12,13,14,15,16 };
+vwAnims[CharacterState::Block] = { 18,19,20,21 };
+vwAnims[CharacterState::Ability] = { 24,25,26,27 };
+vwAnims[CharacterState::Item] = { 30,31,32,33 };
+vwAnims[CharacterState::Negotiate] = { 36,37 };       // if needed
+vwAnims[CharacterState::Dying] = { 42,43,44,45 };
+m_renderer.loadFromSheet("assets/characters/veilwalker.png",
+    sf::Vector2i(128, 128),    // frame size (adjust to actual)
+    vwAnims);
+// fallback – if load fails, the old static portrait is still loaded elsewhere,
+// but we'll keep the renderer uninitialized; Battle will handle that.
 }
 
 void Veilwalker::levelUp() 

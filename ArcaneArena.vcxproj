@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -143,10 +143,12 @@
     <ClCompile Include="AudioManager.cpp" />
     <ClCompile Include="Ability.cpp" />
     <ClCompile Include="Battle.cpp" />
+    <ClCompile Include="CharacterRenderer.cpp" />
     <ClCompile Include="combat.cpp" />
     <ClCompile Include="enemy.cpp" />
     <ClCompile Include="FileManager.cpp" />
     <ClCompile Include="GameLogger.cpp" />
+    <ClCompile Include="GameScoresScreen.cpp" />
     <ClCompile Include="GameWindow.cpp" />
     <ClCompile Include="Inventory.cpp" />
     <ClCompile Include="IronFist.cpp" />
@@ -169,10 +171,12 @@
     <ClInclude Include="AudioManager.h" />
     <ClInclude Include="Ability.h" />
     <ClInclude Include="Battle.h" />
+    <ClInclude Include="CharacterRenderer.h" />
     <ClInclude Include="combat.h" />
     <ClInclude Include="enemy.h" />
     <ClInclude Include="FileManager.h" />
     <ClInclude Include="GameLogger.h" />
+    <ClInclude Include="GameScoresScreen.h" />
     <ClInclude Include="GameWindow.h" />
     <ClInclude Include="Inventory.h" />
     <ClInclude Include="IronFist.h" />
