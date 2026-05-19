@@ -420,7 +420,7 @@ bool ShatterWelcomeScreen::run()
                 startButton.setFillColor(sf::Color(70, 50, 150));
                 startButton.setOutlineColor(sf::Color(180, 140, 255));
             }
-            // Scoreboard (NEW)
+            // Scoreboard
             if (isClicked(scoreboardButton, mpos))
             {
                 scoreboardButton.setFillColor(sf::Color(50, 120, 180));
