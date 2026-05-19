@@ -1,4 +1,4 @@
-// MainMenu.h
+//-------------------------------------- ( MainMenu.h ) -----------------------------------------
 // AGGREGATION....holds GameWindow& (reference, doesn't own it)
     #pragma once
     #include "GameWindow.h"

@@ -4,6 +4,7 @@
 #include "GameWindow.h"
 #include <stdexcept>
 #include "Renderer.h"
+#include "Managers.h"
 #include <cctype>
 class SkySurge 
 {
@@ -12,7 +13,9 @@ GameWindow& gw;
 AudioManager& Audio;
 public:
 	SkySurge(GameWindow& w,AudioManager& audio) :gw(w),Audio(audio)
-	{}
+	{
+    gw.setInterface(Color(3, 2, 1), "SKY SURGE");
+    }
     void run()
     {
         sf::RenderWindow& window = gw.getWindow();
@@ -46,17 +49,16 @@ public:
         CityBackground  city;
         GameWorld       world;
         ScoreManager    sm;
-        FileManager     fm;
+        FileManager_SkySurge fm;
         UIRenderer      ui(window, font, fontOk);
 
         GameStats::reset();
         sm.setBest(fm.getBestScoreFromFile());
-        FileManager::Settings settings = fm.loadSettings();
 
         //______________________Audio_________________________
         Audio.preloadOptional("coin", "Assets/GetCoin.wav");
         Audio.preloadOptional("gameover", "Assets/GameOver.wav");
-        Audio.PlayMusic("Assets/Background.mp3", settings.soundOn ? 40.f : 0.f);
+        Audio.PlayMusic("Assets/Background.mp3", 100.f);
 
         //______________________Starfield___________________________
         std::vector<Star> stars(120);
@@ -68,16 +70,11 @@ public:
         }
 
         //_________________Buttons________________________
-        Button btnPlay(300.f, 240.f, 200.f, 46.f, "PLAY");
-        Button btnHigh(300.f, 298.f, 200.f, 46.f, "HIGH SCORES");
-        Button btnSet(300.f, 356.f, 200.f, 46.f, "SETTINGS");
-        Button btnExit(300.f, 414.f, 200.f, 46.f, "EXIT");
+        Button btnPlay(300.f, 260.f, 200.f, 46.f, "PLAY");
+        Button btnExit(300.f, 330.f, 200.f, 46.f, "EXIT");
         Button btnRetry(210.f, 380.f, 170.f, 46.f, "RETRY");
         Button btnMenu2(420.f, 380.f, 170.f, 46.f, "MENU");
         Button btnConfirm(310.f, 340.f, 180.f, 46.f, "START GAME");
-        Button btnBackHS(320.f, 500.f, 160.f, 46.f, "BACK");
-        Button btnSnd(300.f, 280.f, 200.f, 46.f, settings.soundOn ? "SOUND: ON" : "SOUND: OFF");
-        Button btnBackSet(320.f, 360.f, 160.f, 46.f, "BACK");
 
         // Pause button area (top-right corner)
         sf::FloatRect pauseRect = makeRect(BASE_W - 50.f, 6.f, 38.f, 32.f);
@@ -103,6 +100,7 @@ public:
             Audio.music.play();
         };
 
+        sf::Vector2f mp;
         sf::Clock clock;
         while (window.isOpen()) {
             float dt = clock.restart().asSeconds();
@@ -113,7 +111,7 @@ public:
                 (float)window.getSize().x,
                 (float)window.getSize().y);
             window.setView(gameView);
-            sf::Vector2f mp = window.mapPixelToCoords(
+            mp = window.mapPixelToCoords(
                 sf::Mouse::getPosition(window), gameView);
 
             //________________________EVENTS_______________________
@@ -135,15 +133,7 @@ public:
                         kr->code == sf::Keyboard::Key::Space)
                         drone.thrust();
 
-                    // Pause with Escape key
-                    if (state == ::State::Playing &&
-                        kr->code == sf::Keyboard::Key::Escape)
-                        paused = !paused;
-
-                    if (paused)
-                        Audio.music.pause();
-                    else
-                        Audio.music.play();
+                
 
                     // Name entry keys
                     if (state == ::State::NameEntry) {
@@ -194,8 +184,6 @@ public:
                     if (state == ::State::Menu) {
                         if (btnPlay.rect.contains(p))
                             state = ::State::NameEntry;   // ask name first
-                        if (btnHigh.rect.contains(p)) state = ::State::HighScore;
-                        if (btnSet.rect.contains(p))  state = ::State::Settings;
                         if (btnExit.rect.contains(p)) return;
                     }
 
@@ -206,31 +194,10 @@ public:
                             state = ::State::Countdown;
                         }
                         if (btnMenu2.rect.contains(p))
+                        {
                             state = ::State::Menu;
-                    }
-
-                    // High score
-                    if (state == ::State::HighScore &&
-                        btnBackHS.rect.contains(p))
-                        state = ::State::Menu;
-
-                    // Settings
-                    if (state == ::State::Settings) {
-                        if (btnSnd.rect.contains(p)) {
-                            settings.soundOn = !settings.soundOn;
-                            fm.saveSettings(settings);
-                            btnSnd.label = settings.soundOn ? "SOUND: ON" : "SOUND: OFF";
-
-
-                            if (settings.soundOn) {
-                                Audio.music.setVolume(40.f);
-                            }
-                            else {
-                                Audio.music.setVolume(0.f);
-                            }
+                            Audio.music.play();
                         }
-                        if (btnBackSet.rect.contains(p))
-                            state = ::State::Menu;
                     }
                 }
 
@@ -264,25 +231,22 @@ public:
                 ps.update(dt);
 
                 world.checkCollisions(drone, sm, ps);
-                if (world.coinCollected && settings.soundOn)
-                    Audio.playOptional("coin", 90.f);
+                    if (world.coinCollected)
+                        Audio.playOptional("coin", 80.f);
 
-                if (drone.isDead()) {
-                    if (sm.getScore() > sm.getBest())
-                        sm.setBest(sm.getScore());
-                    fm.addScore(playerName, sm.getScore());
+                    if (drone.isDead()) {
+                        if (sm.getScore() > sm.getBest())
+                            sm.setBest(sm.getScore());
+                        fm.addScore(playerName, sm.getScore());
 
-                    Audio.music.stop();
-                    if (settings.soundOn)
-                        Audio.playOptional("gameover", 90.f);
-
-                    state = ::State::Dead;
-                }
+                        Audio.music.stop();
+                        Audio.playOptional("gameover", 80.f);
+                        state = ::State::Dead;
+                    }
             }
 
             //_________________________DRAW______________________________
             window.clear(COL_BG_TOP);
-
 
             ui.drawStars(stars, totalTime);
             city.draw(window);
@@ -316,7 +280,7 @@ public:
             switch (state) {
             case ::State::Menu:
                 ui.drawMenu(sm, totalTime, totalTime,
-                    btnPlay, btnHigh, btnSet, btnExit, mp);
+                    btnPlay, btnExit, mp);
                 break;
             case ::State::NameEntry:
                 ui.drawNameEntry(sm, playerName, totalTime, btnConfirm, mp);
@@ -327,17 +291,10 @@ public:
             case ::State::Dead:
                 ui.drawDead(sm, totalTime, btnRetry, btnMenu2, mp);
                 break;
-            case ::State::HighScore:
-                ui.drawHighScores(fm, btnBackHS, mp);
-                break;
-            case ::State::Settings:
-                ui.drawSettings(settings, btnSnd, btnBackSet, mp);
-                break;
             default: break;
             }
 
             window.display();
-
         }
     }
 };

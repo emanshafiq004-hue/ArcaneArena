@@ -160,23 +160,17 @@ void drawMenuScreen(sf::RenderWindow& window, const sf::Font& font, int menuInde
 
     sf::Color col0 = (menuIndex == 0) ? TEXT_BRIGHT : TEXT_DIM;
     sf::Color col1 = (menuIndex == 1) ? TEXT_BRIGHT : TEXT_DIM;
-    sf::Color col2 = (menuIndex == 2) ? TEXT_BRIGHT : TEXT_DIM;
 
-    sf::Text o0 = makeCenteredText(font, "START NEW GAME", 30, col0, 800.f, 265.f);
-    sf::Text o1 = makeCenteredText(font, "CONTINUE PREVIOUS GAME", 30, col1, 800.f, 325.f);
-    sf::Text o2 = makeCenteredText(font, "VIEW SCOREBOARD", 30, col2, 800.f, 385.f);
+    sf::Text o0 = makeCenteredText(font, "START NEW GAME", 30, col0, 800.f, 280.f);
+    sf::Text o1 = makeCenteredText(font, "CONTINUE PREVIOUS GAME", 30, col1, 800.f, 340.f);
     window.draw(o0);
     window.draw(o1);
-    window.draw(o2);
 
     sf::Text arrow(font, ">", 30);
     arrow.setFillColor(sf::Color(180, 180, 255));
-    float arrowY = 250.f + menuIndex * 60.f;
+    float arrowY = 270.f + menuIndex * 60.f;
 
-    sf::FloatRect selBounds;
-    if (menuIndex == 0) selBounds = o0.getGlobalBounds();
-    else if (menuIndex == 1) selBounds = o1.getGlobalBounds();
-    else selBounds = o2.getGlobalBounds();
+    sf::FloatRect selBounds = (menuIndex == 0) ? o0.getGlobalBounds() : o1.getGlobalBounds();
     arrow.setPosition(sf::Vector2f(selBounds.position.x - 30.f, arrowY));
     window.draw(arrow);
 

@@ -42,13 +42,13 @@
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>true</UseDebugLibraries>
-    <PlatformToolset>v145</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <UseDebugLibraries>false</UseDebugLibraries>
-    <PlatformToolset>v145</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>Unicode</CharacterSet>
   </PropertyGroup>
@@ -153,6 +153,7 @@
     <ClCompile Include="GameLogger.cpp" />
     <ClCompile Include="GameScoresScreen.cpp" />
     <ClCompile Include="GameWindow.cpp" />
+    <ClCompile Include="GameScreen.cpp" />
     <ClCompile Include="Globals.cpp" />
     <ClCompile Include="Inventory.cpp" />
     <ClCompile Include="IronFist.cpp" />
@@ -168,12 +169,8 @@
     <ClCompile Include="Region.cpp" />
     <ClCompile Include="Renderer.cpp" />
     <ClCompile Include="scoreboard.cpp" />
-    <ClCompile Include="ScoresStatus.cpp" />
     <ClCompile Include="ScoreStorage.cpp" />
     <ClCompile Include="ShatterWelcome.cpp" />
-    <ClCompile Include="SkySurgeGame.cpp">
-      <ExcludedFromBuild>true</ExcludedFromBuild>
-    </ClCompile>
     <ClCompile Include="Spirit.cpp" />
     <ClCompile Include="ui.cpp" />
     <ClCompile Include="Veilwalker.cpp" />
@@ -207,7 +204,6 @@
     <ClInclude Include="Region.h" />
     <ClInclude Include="Renderer.h" />
     <ClInclude Include="scoreboard.h" />
-    <ClInclude Include="ScoresStatus.h" />
     <ClInclude Include="ScoreStorage.h" />
     <ClInclude Include="ShatterShift.h" />
     <ClInclude Include="ShatterWelcome.h" />

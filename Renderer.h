@@ -85,8 +85,7 @@ public:
     void drawHUD(const ScoreManager& sm, float totalTime);
 
     void drawMenu(const ScoreManager& sm, float totalTime, float totalT,
-        Button& btnPlay, Button& btnHigh,
-        Button& btnSet, Button& btnExit,
+        Button& btnPlay, Button& btnExit,
         sf::Vector2f mousePos);
 
     void drawCountdown(float countdownTimer);
@@ -99,10 +98,10 @@ public:
         float totalTime, Button& btnConfirm,
         sf::Vector2f mousePos);
 
-    void drawHighScores(FileManager& fm, Button& btnBackHS,
+    void drawHighScores(FileManager_SkySurge& fm, Button& btnBackHS,
         sf::Vector2f mousePos);
 
-    void drawSettings(FileManager::Settings& settings,
+    void drawSettings(FileManager_SkySurge::Settings& settings,
         Button& btnSnd, Button& btnBackSet,
         sf::Vector2f mousePos);
 

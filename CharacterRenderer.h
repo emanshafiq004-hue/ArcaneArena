@@ -1,71 +1,67 @@
-﻿// CharacterRenderer.h
-// Manages sprite‑sheet animation for Veilwalker and Spirits.
-// Each character has states (Idle, Walk, Attack, …) and we cycle
-// through the appropriate set of frames.
+﻿//------------------------------------ ( CharacterRenderer.h ) ----------------------------------
+// Manages sprite sheet animation for Veilwalker and Spirits.
+// Each character has states (Idle, Walk, Attack, …)
 
 #pragma once
 #include <SFML/Graphics.hpp>
-#include<iostream>
+#include <iostream>
+#include <optional>
 #include <unordered_map>
 #include <vector>
+#include <tuple>
 
 enum class CharacterState
 {
-    Idle,
-    Walk,
-    Attack,
-    Block,
-    Negotiate,      // for guidance / trickster spirits
-    Ability,        // Veilwalker special move
-    Item,           // using a potion
-    Dying,
-    Steal           // Phantom Wraith only
+Idle,
+Walk,
+Attack,
+Block,
+Negotiate,
+Ability,      // Veilwalker special move
+Item,         // using a healing potion
+Dying,
+ShapeShift,   // Shadow Sovereign only
+Steal         // Phantom Wraith only
+};
+
+// Hash function for CharacterState enum to use in unordered_map..
+struct CharacterStateHash
+{
+std::size_t operator()(CharacterState state) const
+{
+return std::hash<int>()(static_cast<int>(state));
+}
 };
 
 class CharacterRenderer
 {
 public:
-    CharacterRenderer();
-
-    // Load the sprite sheet and define the frame rectangles for each state.
-    // sheetPath – path to the texture file (PNG)
-    // frameSize – width and height of a single frame
-    // animations – map from state to a vector of frame indices (row‑major, 0‑based)
-    // frameDuration – seconds per frame for all animations (can be overridden per state later)
-    bool loadFromSheet(const std::string& sheetPath,
-        sf::Vector2i frameSize,
-        const std::unordered_map<CharacterState, std::vector<int>>& animations,
-        float frameDuration = 0.12f);
-
-    // Set the current visual state. Animation resets.
-    void setState(CharacterState state);
-
-    // Advance animation by dt seconds.
-    void update(float dt);
-
-    // Draw the sprite at the current world position.
-    void draw(sf::RenderWindow& window);
-
-    // Position helpers (the anchor is the bottom‑center of the feet).
-    void setPosition(const sf::Vector2f& feetPos);
-    sf::Vector2f getPosition() const;
-
-    // Scale / flip
-    void setScale(float scale);
-    void setFacingRight(bool facingRight);
-
-    // Bounding boxes for collisions (if needed later).
-    sf::FloatRect getGlobalBounds() const;
-    sf::FloatRect getAttackBox() const;       // approximate attack hitbox
-
+CharacterRenderer();
+bool loadStateFromSheet(CharacterState state,const std::string& sheetPath,sf::Vector2i frameSize,const std::vector<int>& frameIndices,float frameDuration = 0.10f);
+bool loadMultipleStates(const std::unordered_map<CharacterState,std::tuple<std::string, sf::Vector2i, std::vector<int>>>& stateConfigs,float frameDuration = 0.10f);
+void setState(CharacterState state);
+void update(float dt);
+void draw(sf::RenderWindow& window);
+void setPosition(const sf::Vector2f& feetPos);
+sf::Vector2f getPosition() const;
+void setScale(float scale);
+void setFacingRight(bool facingRight);
+bool isFacingRight() const;
+sf::FloatRect getGlobalBounds() const;
+sf::FloatRect getAttackBox() const;
 private:
-    sf::Texture m_texture;
-    sf::Sprite  m_sprite;
-    sf::Vector2i m_frameSize;
-    std::unordered_map<CharacterState, std::vector<sf::IntRect>> m_frames;
-    CharacterState m_currentState = CharacterState::Idle;
-    int m_currentFrameIndex = 0;
-    float m_frameDuration = 0.12f;
-    float m_timeAccum = 0.f;
-    bool m_facingRight = true;
+std::unordered_map<CharacterState, sf::Texture, CharacterStateHash> m_textures;
+std::unordered_map<CharacterState, std::optional<sf::Sprite>, CharacterStateHash> m_sprites; 
+std::unordered_map<CharacterState, std::vector<sf::IntRect>, CharacterStateHash> m_frames;
+std::unordered_map<CharacterState, sf::Vector2i, CharacterStateHash> m_frameSizes;
+CharacterState m_currentState = CharacterState::Idle;
+int m_currentFrameIndex = 0;
+float m_frameDuration = 0.10f;
+float m_timeAccum = 0.f;
+float m_baseScale = 1.f;
+bool m_facingRight = true;
+// Internal helpers...
+bool hasSpriteFor(CharacterState state) const;
+sf::Sprite& spriteFor(CharacterState state);
+const sf::Sprite& spriteFor(CharacterState state) const;
 };

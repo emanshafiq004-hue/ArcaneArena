@@ -7,7 +7,6 @@ ShatterWelcomeScreen::ShatterWelcomeScreen(GameWindow& gw)
     : gameWindow(gw),
     titleText(font),
     startText(font),
-    scoreboardText(font),
     exitText(font),
     dialogTitle(font),
     nameDisplay(font),
@@ -17,7 +16,6 @@ ShatterWelcomeScreen::ShatterWelcomeScreen(GameWindow& gw)
     bgSprite(bgTexture),
     playerName(""),
     showNameDialog(false),
-    showScoreboard(false),
     showWarning(false)
 {
     if (!font.openFromFile("assets/shatterassets/arial.ttf"))
@@ -61,24 +59,10 @@ void ShatterWelcomeScreen::setupMainScreen()
     startText.setOrigin({ sb.size.x / 2.f, sb.size.y / 2.f });
     startText.setPosition({ 400.f, 288.f });
 
-    //Scoreboard Button
-    scoreboardButton.setSize({ 240.f, 58.f });
-    scoreboardButton.setOrigin({ 120.f, 29.f });
-    scoreboardButton.setPosition({ 400.f, 375.f });
-    scoreboardButton.setFillColor(sf::Color(30, 80, 120));
-    scoreboardButton.setOutlineColor(sf::Color(100, 200, 255));
-    scoreboardButton.setOutlineThickness(2.5f);
-    scoreboardText.setString("Scoreboard");
-    scoreboardText.setCharacterSize(23);
-    scoreboardText.setFillColor(sf::Color::White);
-    sf::FloatRect scb = scoreboardText.getLocalBounds();
-    scoreboardText.setOrigin({ scb.size.x / 2.f, scb.size.y / 2.f });
-    scoreboardText.setPosition({ 400.f, 373.f });
-
     // Exit Button
     exitButton.setSize({ 240.f, 58.f });
     exitButton.setOrigin({ 120.f, 29.f });
-    exitButton.setPosition({ 400.f, 460.f });
+    exitButton.setPosition({ 400.f, 400.f });
     exitButton.setFillColor(sf::Color(130, 30, 30));
     exitButton.setOutlineColor(sf::Color(255, 100, 100));
     exitButton.setOutlineThickness(2.5f);
@@ -87,7 +71,7 @@ void ShatterWelcomeScreen::setupMainScreen()
     exitText.setFillColor(sf::Color::White);
     sf::FloatRect eb = exitText.getLocalBounds();
     exitText.setOrigin({ eb.size.x / 2.f, eb.size.y / 2.f });
-    exitText.setPosition({ 400.f, 458.f });
+    exitText.setPosition({ 400.f, 400.f });
 }
 
 //  SETUP NAME DIALOG
@@ -138,119 +122,6 @@ void ShatterWelcomeScreen::setupNameDialog()
     warningText.setPosition({ 400.f, 375.f });
 }
 
-void ShatterWelcomeScreen::drawScoreboardOverlay()
-{
-    // Dim layer
-    sf::RectangleShape dim({ 800.f, 600.f });
-    dim.setFillColor(sf::Color(0, 0, 0, 180));
-    gameWindow.getWindow().draw(dim);
-
-    // Panel 
-    sf::RectangleShape panel({ 500.f, 380.f });
-    panel.setOrigin({ 250.f, 190.f });
-    panel.setPosition({ 400.f, 310.f });
-    panel.setFillColor(sf::Color(18, 12, 40, 250));
-    panel.setOutlineColor(sf::Color(100, 200, 255));
-    panel.setOutlineThickness(3.f);
-    gameWindow.getWindow().draw(panel);
-
-    // Panel title
-    sf::Text title(font);
-    title.setString("HIGH SCORES");
-    title.setCharacterSize(32);
-    title.setFillColor(sf::Color(100, 200, 255));
-    title.setStyle(sf::Text::Bold);
-    sf::FloatRect tb = title.getLocalBounds();
-    title.setOrigin({ tb.size.x / 2.f, tb.size.y / 2.f });
-    title.setPosition({ 400.f, 148.f });
-    gameWindow.getWindow().draw(title);
-
-    // Divider
-    sf::RectangleShape div1({ 460.f, 1.f });
-    div1.setOrigin({ 230.f, 0.f });
-    div1.setPosition({ 400.f, 172.f });
-    div1.setFillColor(sf::Color(100, 80, 160));
-    gameWindow.getWindow().draw(div1);
-
-    // Column positions 
-    const float COL_RANK = 155.f;
-    const float COL_NAME = 245.f;
-    const float COL_LEVEL = 460.f;
-    const float COL_SCORE = 560.f;
-
-    // Column header
-    auto makeHeader = [&](const std::string& str, float x, float y) {
-        sf::Text h(font);
-        h.setString(str);
-        h.setCharacterSize(15);
-        h.setFillColor(sf::Color(160, 160, 210));
-        h.setStyle(sf::Text::Bold);
-        h.setPosition({ x, y });
-        gameWindow.getWindow().draw(h);
-        };
-    makeHeader("Rank", COL_RANK, 180.f);
-    makeHeader("Name", COL_NAME, 180.f);
-    makeHeader("Level", COL_LEVEL, 180.f);
-    makeHeader("Score", COL_SCORE, 180.f);
-
-    //  Divider under headers
-    sf::RectangleShape div2({ 460.f, 1.f });
-    div2.setOrigin({ 230.f, 0.f });
-    div2.setPosition({ 400.f, 200.f });
-    div2.setFillColor(sf::Color(100, 80, 160));
-    gameWindow.getWindow().draw(div2);
-
-    // Score rows
-    const auto& entries = scoreManager.getEntries();
-    for (int i = 0; i < 5; i++)
-    {
-        float y = 208.f + i * 32.f;
-        sf::Color rowColor = (i == 0)
-            ? sf::Color(255, 215, 0)        // gold for top score
-            : sf::Color(220, 220, 220);
-
-        auto makeCell = [&](const std::string& str, float x) {
-            sf::Text t(font);
-            t.setString(str);
-            t.setCharacterSize(15);
-            t.setFillColor(rowColor);
-            t.setPosition({ x, y });
-            gameWindow.getWindow().draw(t);
-            };
-
-        makeCell(std::to_string(i + 1) + ".", COL_RANK);
-        if (i < (int)entries.size())
-        {
-            makeCell(entries[i].name, COL_NAME);
-            makeCell(std::to_string(entries[i].level), COL_LEVEL);
-            makeCell(std::to_string(entries[i].score), COL_SCORE);
-        }
-        else
-        {
-            makeCell("---", COL_NAME);
-            makeCell("-", COL_LEVEL);
-            makeCell("---", COL_SCORE);
-        }
-    }
-
-    // Divider after rows
-    sf::RectangleShape div3({ 460.f, 1.f });
-    div3.setOrigin({ 230.f, 0.f });
-    div3.setPosition({ 400.f, 372.f });
-    div3.setFillColor(sf::Color(100, 80, 160));
-    gameWindow.getWindow().draw(div3);
-
-    // Close hint
-    sf::Text hint(font);
-    hint.setString("Press  ESC  to close");
-    hint.setCharacterSize(16);
-    hint.setFillColor(sf::Color(140, 140, 180));
-    sf::FloatRect hb = hint.getLocalBounds();
-    hint.setOrigin({ hb.size.x / 2.f, hb.size.y / 2.f });
-    hint.setPosition({ 400.f, 480.f });
-    gameWindow.getWindow().draw(hint);
-}
-
 // click detection
 bool ShatterWelcomeScreen::isClicked(const sf::RectangleShape& btn, sf::Vector2i mousePos)
 {
@@ -279,12 +150,7 @@ bool ShatterWelcomeScreen::run()
             {
                 if (key->code == sf::Keyboard::Key::Escape)
                 {
-                    if (showScoreboard)
-                    {
-                        // Close scoreboard, back to main
-                        showScoreboard = false;
-                    }
-                    else if (showNameDialog)
+                    if (showNameDialog)
                     {
                         // Close name dialog, back to main
                         showNameDialog = false;
@@ -368,7 +234,7 @@ bool ShatterWelcomeScreen::run()
                 {
                     sf::Vector2i pos = sf::Mouse::getPosition(gameWindow.getWindow());
 
-                    if (!showNameDialog && !showScoreboard)
+                    if (!showNameDialog)
                     {
                         if (isClicked(startButton, pos))
                         {
@@ -377,11 +243,6 @@ bool ShatterWelcomeScreen::run()
                             nameDisplay.setString("");
                             nameBox.setOutlineColor(sf::Color(180, 140, 255));
                             showWarning = false;
-                        }
-                        else if (isClicked(scoreboardButton, pos))  // NEW
-                        {
-                            scoreManager.load();   // refresh from file
-                            showScoreboard = true;
                         }
                         else if (isClicked(exitButton, pos))
                         {
@@ -406,7 +267,7 @@ bool ShatterWelcomeScreen::run()
         nameDisplay.setString(displayed);
 
         // Button hover effects
-        if (!showNameDialog && !showScoreboard)
+        if (!showNameDialog)
         {
             sf::Vector2i mpos = sf::Mouse::getPosition(gameWindow.getWindow());
             // Start
@@ -419,17 +280,6 @@ bool ShatterWelcomeScreen::run()
             {
                 startButton.setFillColor(sf::Color(70, 50, 150));
                 startButton.setOutlineColor(sf::Color(180, 140, 255));
-            }
-            // Scoreboard (NEW)
-            if (isClicked(scoreboardButton, mpos))
-            {
-                scoreboardButton.setFillColor(sf::Color(50, 120, 180));
-                scoreboardButton.setOutlineColor(sf::Color(160, 230, 255));
-            }
-            else
-            {
-                scoreboardButton.setFillColor(sf::Color(30, 80, 120));
-                scoreboardButton.setOutlineColor(sf::Color(100, 200, 255));
             }
             // Exit
             if (isClicked(exitButton, mpos))
@@ -449,11 +299,9 @@ bool ShatterWelcomeScreen::run()
         gameWindow.getWindow().draw(bgSprite);
         // Always draw main screen behind everything
         gameWindow.getWindow().draw(startButton);
-        gameWindow.getWindow().draw(scoreboardButton);  
         gameWindow.getWindow().draw(exitButton);
         gameWindow.getWindow().draw(titleText);
         gameWindow.getWindow().draw(startText);
-        gameWindow.getWindow().draw(scoreboardText);    
         gameWindow.getWindow().draw(exitText);
         // Name dialog on top
         if (showNameDialog)
@@ -467,9 +315,6 @@ bool ShatterWelcomeScreen::run()
             if (showWarning)
                 gameWindow.getWindow().draw(warningText);
         }
-        // Scoreboard overlay on top
-        if (showScoreboard)
-            drawScoreboardOverlay();
         gameWindow.display();
     }
     return false;

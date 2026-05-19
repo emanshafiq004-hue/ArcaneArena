@@ -10,7 +10,8 @@
 class IronFist {
 private:
     GameWindow& gw;
+    AudioManager& audio;
 public:
-    IronFist(GameWindow& w);
+    IronFist(GameWindow& w, AudioManager& a);
     void run();
 };

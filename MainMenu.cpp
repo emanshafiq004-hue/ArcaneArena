@@ -1,5 +1,4 @@
-// MainMenu.cpp
-
+//-------------------------------- ( MainMenu.cpp ) ---------------------------------------------
 #include "MainMenu.h"
 #include "AssetLoader.h"
 #include <stdexcept>
@@ -13,7 +12,7 @@ static const string labels[MainMenu::ITEM_COUNT] = {
 "  EXIT"
 };
 
-//CONSTRUCTOR:
+//CONSTRUCTOR:-
 MainMenu::MainMenu(GameWindow& window,AudioManager& audio) : gw(window), headerText(font), selectedIndex(0),Audio(audio) 
 {
 gw.setInterface(Color(26, 10, 59), "ARCANE ARENA - MAIN MENU");
@@ -59,7 +58,7 @@ menuItems[i].setPosition({ cx, static_cast<float>(gw.getHeight()) * 0.81f });
 updateHighlight();
 }
 
-//HIGHLIGHT UPDATE :
+//HIGHLIGHT UPDATE :-
 void MainMenu::updateHighlight() 
 {
 for (int i = 0; i < ITEM_COUNT; i++) 
@@ -68,7 +67,7 @@ menuItems[i].setFillColor(i == selectedIndex? Color(155, 110, 185): Color(185, 1
 }
 }
 
-//RUN:
+//RUN:-
 int MainMenu::run() 
 {
 while (gw.isOpen()) 

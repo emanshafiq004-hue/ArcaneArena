@@ -1,602 +1,104 @@
-﻿//#include "Battle.h"
-//#include "Spirits.h"
-//#include "AssetLoader.h"
-//#include <sstream>
-//#include <algorithm>
-//#include <cstdlib>
-//#include <cctype>
-//#include <stdexcept>
-//#include <unordered_map>
-//
-//using namespace std;
-//using namespace sf;
-//
-////---------------------------------------------------------------------------
-//// INTERNAL HELPERS (Static Utilty Functions)
-////---------------------------------------------------------------------------
-//
-//static string slugifyName(const string& name) 
-//{
-//string s;
-//s.reserve(name.size());
-//for (unsigned char c : name) 
-//{
-//if (c == ' ') 
-//s += '_';
-//else          
-//s += static_cast<char>(tolower(c));
-//}
-//return s;
-//}
-//
-//static vector<string> enemyPortraitPaths(const string& enemyName) 
-//{
-//static const unordered_map<string, string> aliases = {
-//{ "Corrupted Dryad",   "willowisp"        },
-//{ "Temple Guardian",   "stone_golem"      },
-//{ "Ember Tyrant",      "emberwing"        },
-//{ "Shadow Sovereign",  "shadow_sovereign" },
-//{ "Stone Golem",       "stone_golem"      },
-//{ "Phantom Wraith",    "phantom_wraith"   },
-//{ "Willowisp",         "willowisp"        },
-//{ "emberwing",         "emberwing"        },
-//{ "Guidance Spirit",   "guidance_spirit"  },
-//{ "Trickster",         "trickster"        }
-//};
-//vector<string> paths;
-//auto it = aliases.find(enemyName);
-//if (it != aliases.end()) 
-//{
-//paths.push_back("assets/characters/" + it->second + ".png");
-//paths.push_back("assets/characters/" + it->second + ".jpg");
-//}
-//const string sl = slugifyName(enemyName);
-//paths.push_back("assets/characters/" + sl + ".png");
-//paths.push_back("assets/characters/" + sl + ".jpg");
-//return paths;
-//}
-//
-//// -----------------------------------------------------------------------------
-//// CONSTRUCTOR:
-//// -----------------------------------------------------------------------------
-//
-//Battle::Battle(GameWindow& window, Veilwalker& p, Spirit& e): gw(window), player(p), enemy(e),selectedAction(0), bossHalfHealthTriggered(false) 
-//{
-//if (!AssetLoader::openFontWithFallback(font,{ "assets/font/ActionSpectral.ttf","assets/font/Philosopher-Bold.ttf" }))
-//throw runtime_error("Battle: Cannot load font!");
-//tryLoadBattleDecor();
-//addLog("A wild " + enemy.getName() + " appears!");
-//}
-//
-//// ------------------------------------------------------------------------------
-//// ASSETS LOADING:
-//// ------------------------------------------------------------------------------
-//
-//void Battle::tryLoadBattleDecor() 
-//{
-//AssetLoader::emplaceCoverSprite(battleFrameTex, battleFrameSpr, { "assets/texture/ui_battle_frame.png","assets/texture/default.png" }, gw.getWidth(), gw.getHeight());  
-//// Player portrait... bottom-left area...
-//if (AssetLoader::loadTextureWithFallback(playerPortraitTex,{ "assets/characters/veilwalker.png","assets/characters/player.png","assets/characters/veilwalker.jpg" })) 
-//{
-//playerPortraitTex.setSmooth(true);
-//playerPortraitSpr.emplace(playerPortraitTex);
-//const float ph = 160.f;
-//const float sc = ph / static_cast<float>(playerPortraitTex.getSize().y);
-//playerPortraitSpr->setScale({ sc, sc });
-//playerPortraitSpr->setPosition({ 32.f,gw.getHeight() - 210.f});
-//}
-//// Enemy portrait....bottom-right area...
-//if (AssetLoader::loadTextureWithFallback(enemyPortraitTex,enemyPortraitPaths(enemy.getName()))) 
-//{
-//enemyPortraitTex.setSmooth(true);
-//enemyPortraitSpr.emplace(enemyPortraitTex);
-//const float eh = 160.f;
-//const float sc = eh / static_cast<float>(enemyPortraitTex.getSize().y);
-//enemyPortraitSpr->setScale({ sc, sc });
-//enemyPortraitSpr->setPosition({gw.getWidth() - 220.f, 48.f});
-//}
-//
-//// Coin icon:
-//if (AssetLoader::loadTextureWithFallback(coinTex,{ "assets/coins/Gold_coin.png","assets/coins/Silver_coin.png"})) 
-//{
-//coinTex.setSmooth(true);
-//coinSpr.emplace(coinTex);
-//const float sc = 28.f / static_cast<float>(coinTex.getSize().y);
-//coinSpr->setScale({ sc, sc });
-//}
-//}
-//
-////-----------------------------------------------------------------------------
-//// BATTLE LOG:
-////-----------------------------------------------------------------------------
-//
-//void Battle::addLog(const string& msg) 
-//{
-//string upperMsg;
-//upperMsg.reserve(msg.size());
-//for (unsigned char c : msg)
-//upperMsg.push_back(static_cast<char>(toupper(c)));
-//battleLog.push_back(upperMsg);
-//if (battleLog.size() > 5)
-//battleLog.erase(battleLog.begin());
-//}
-//
-////------------------------------------------------------------------------------
-//// GRADIENT BAR HELPER:
-////------------------------------------------------------------------------------
-//
-//void Battle::drawGradientBar(float x, float y, float w, float h,int current, int max,Color left, Color right) 
-//{
-//// Dark background trough
-//RectangleShape bg({ w, h });
-//bg.setPosition({ x, y });
-//bg.setFillColor(Color(34, 34, 42));
-//gw.getWindow().draw(bg);
-//const float ratio = (max > 0)? clamp(static_cast<float>(current) / static_cast<float>(max), 0.f, 1.f) : 0.f;
-//const float fw = w * ratio;
-//if (fw < 0.5f)
-//return;
-//// Gradient fill using a TriangleStrip
-//VertexArray strip(PrimitiveType::TriangleStrip, 4);
-//strip[0].position = { x, y }; 
-//strip[0].color = left;
-//strip[1].position = { x + fw, y }; 
-//strip[1].color = right;
-//strip[2].position = { x, y + h }; 
-//strip[2].color = left;
-//strip[3].position = { x + fw,  y + h };
-//strip[3].color = right;
-//gw.getWindow().draw(strip);
-//}
-//
-////---------------------------------------------------------------------------
-//// MAIN RENDER FUNCTION
-////---------------------------------------------------------------------------
-//
-//void Battle::drawBattleUI() 
-//{
-//const float vw = static_cast<float>(gw.getWidth());
-//const float vh = static_cast<float>(gw.getHeight());
-//gw.clear();
-//RectangleShape vignette({ vw, vh });
-//vignette.setFillColor(Color(20, 15, 40));
-//gw.getWindow().draw(vignette);
-//if (battleFrameSpr)
-//gw.getWindow().draw(*battleFrameSpr);
-//if (enemyPortraitSpr)
-//gw.getWindow().draw(*enemyPortraitSpr);
-//if (playerPortraitSpr)
-//gw.getWindow().draw(*playerPortraitSpr);
-//{
-//Text enemyName(font);
-//enemyName.setString(enemy.getName());
-//enemyName.setCharacterSize(28);
-//enemyName.setFillColor(Color(255, 140, 0));
-//enemyName.setPosition({ vw - 360.f, 16.f });
-//gw.getWindow().draw(enemyName);
-//const float eBarX = vw - 360.f;
-//drawGradientBar(eBarX, 50.f, 340.f, 22.f,enemy.getHp(), enemy.getMaxHp(),Color(180, 20, 60), Color(255, 120, 90));
-//Text eHp(font);
-//eHp.setString(to_string(enemy.getHp()) + " / " + to_string(enemy.getMaxHp()));
-//eHp.setCharacterSize(14);
-//eHp.setFillColor(Color(255, 255, 255));
-//eHp.setPosition({ eBarX + 4.f, 76.f });
-//gw.getWindow().draw(eHp);
-//}
-//{
-//Text pName(font);
-//pName.setString(player.getName() + "  LV." + to_string(player.getLevel()));
-//pName.setCharacterSize(20);
-//pName.setFillColor(Color(255, 255, 255));
-//pName.setPosition({ 28.f, vh - 268.f });
-//gw.getWindow().draw(pName);
-//// HP bar — green gradient...
-//drawGradientBar(28.f, vh - 240.f, 300.f, 20.f,player.getHp(), player.getMaxHp(),Color(30, 160, 60), Color(120, 255, 140));
-//Text pHp(font);
-//pHp.setString("HP " + to_string(player.getHp()) + "/" + to_string(player.getMaxHp()));
-//pHp.setCharacterSize(13);
-//pHp.setFillColor(Color(255, 255, 255));
-//pHp.setPosition({ 32.f, vh - 214.f });
-//gw.getWindow().draw(pHp);
-//// SP (Spirit Energy) bar.. purple gradient..
-//drawGradientBar(28.f, vh - 190.f, 280.f, 14.f,player.getSpiritEnergy(), player.getMaxEnergy(),Color(100, 40, 180), Color(220, 120, 255));
-//Text pEn(font);
-//pEn.setString("SP " + to_string(player.getSpiritEnergy())+ "/" + to_string(player.getMaxEnergy()));
-//pEn.setCharacterSize(12);
-//pEn.setFillColor(Color(255, 255, 255));
-//pEn.setPosition({ 32.f, vh - 172.f });
-//gw.getWindow().draw(pEn);
-//}
-//
-//    // Shows progress toward the next level using a cyan-to-gold gradient.
-//    {
-//        const int  currentXP = player.getXP();
-//        const int  xpForNext = player.getXPToNext(); // implement if missing
-//        drawGradientBar(28.f, vh - 154.f, 260.f, 10.f,
-//            currentXP, xpForNext,
-//            Color(0, 180, 220), Color(255, 220, 60));
-//
-//        Text xpLabel(font);
-//        xpLabel.setString("XP " + to_string(currentXP) + "/" + to_string(xpForNext));
-//        xpLabel.setCharacterSize(11);
-//        xpLabel.setFillColor(Color(200, 230, 255));
-//        xpLabel.setPosition({ 32.f, vh - 140.f });
-//        gw.getWindow().draw(xpLabel);
-//    }
-//
-//    {
-//        const float coinY = vh - 124.f;
-//        if (coinSpr) {
-//            coinSpr->setPosition({ 28.f, coinY });
-//            gw.getWindow().draw(*coinSpr);
-//        }
-//        Text coinsLabel(font);
-//        coinsLabel.setString(to_string(player.getCoins()));
-//        coinsLabel.setCharacterSize(14);
-//        coinsLabel.setFillColor(Color(255, 220, 100));
-//        coinsLabel.setPosition({ coinSpr ? 62.f : 28.f, coinY });
-//        gw.getWindow().draw(coinsLabel);
-//    }
-//    drawBattleLog();
-//    drawActionMenu();
-//    gw.display();
-//}
-//
-//// ─────────────────────────────────────────────────────────────────────────────
-//// Action menu  (drawn in Layer 10, on top of portraits and bars)
-//// ─────────────────────────────────────────────────────────────────────────────
-//
-//void Battle::drawActionMenu() {
-//    const float vh = static_cast<float>(gw.getHeight());
-//    const string actions[] = { "ATTACK", "ABILITY", "ITEM", "EXIT" };
-//    for (int i = 0; i < 4; i++) {
-//        Text t(font);
-//        t.setString((i == selectedAction ? "> " : "  ") + actions[i]);
-//        t.setCharacterSize(18);
-//        t.setFillColor(i == selectedAction ? Color(0, 255, 200) : Color(220, 220, 255));
-//        t.setPosition({ 28.f, vh - 120.f + static_cast<float>(i) * 28.f });
-//        gw.getWindow().draw(t);
-//    }
-//}
-//
-//// ─────────────────────────────────────────────────────────────────────────────
-//// Battle log  (drawn in Layer 9)
-//// ─────────────────────────────────────────────────────────────────────────────
-//
-//void Battle::drawBattleLog() {
-//    const float vw = static_cast<float>(gw.getWidth());
-//    const float vh = static_cast<float>(gw.getHeight());
-//    for (int i = 0; i < static_cast<int>(battleLog.size()); i++) {
-//        Text line(font);
-//        line.setString(battleLog[i]);
-//        line.setCharacterSize(13);
-//        line.setFillColor(Color(200, 200, 240));
-//        line.setPosition({ 320.f, vh * 0.35f + static_cast<float>(i) * 20.f });
-//        gw.getWindow().draw(line);
-//    }
-//}
-//
-//// ─────────────────────────────────────────────────────────────────────────────
-//// Combat logic  (unchanged)
-//// ─────────────────────────────────────────────────────────────────────────────
-//
-//void Battle::enemyTurn() {
-//    PhantomWraith* wraith = dynamic_cast<PhantomWraith*>(&enemy);
-//    if (wraith && wraith->stealsItems() && player.getInventory().getCount() > 0) {
-//        player.getInventory().useItem(0);
-//        addLog("Phantom Wraith STOLE an item!");
-//        return;
-//    }
-//    int dmg = enemy.attackPlayer();
-//    player.takeDamage(dmg);
-//    addLog(enemy.getName() + " attacks for " + to_string(dmg) + " dmg!");
-//}
-//
-//int Battle::playerTurn(BattleAction action) {
-//    switch (action) {
-//    case BattleAction::Attack: {
-//        int dmg = player.attackEnemy();
-//        enemy.takeDamage(dmg);
-//        addLog("You attack for " + to_string(dmg) + " dmg!");
-//        return dmg;
-//    }
-//    case BattleAction::UseAbility: {
-//        if (player.getAbilities().empty()) {
-//            addLog("No abilities!");
-//            return 0;
-//        }
-//        int dmg = player.useAbility(0);
-//        if (dmg < 0) {
-//            addLog("Not enough Spirit Energy!");
-//            return 0;
-//        }
-//        enemy.takeDamage(dmg);
-//        addLog(player.getAbilities()[0].getName() + " hits for " + to_string(dmg) + "!");
-//        return dmg;
-//    }
-//    case BattleAction::UseItem: {
-//        if (player.getInventory().getCount() == 0) {
-//            addLog("No items!");
-//            return 0;
-//        }
-//        int healed = player.useItemFromInventory(0);
-//        addLog("Used item! Healed " + to_string(healed) + " HP.");
-//        return 0;
-//    }
-//    case BattleAction::Exit:
-//        addLog("You exit the battle.");
-//        return -1;
-//    default:
-//        return 0;
-//    }
-//}
-//
-//// ─────────────────────────────────────────────────────────────────────────────
-//// Main loop  (unchanged logic)
-//// ─────────────────────────────────────────────────────────────────────────────
-//
-//BattleResult Battle::run() {
-//    Clock inputCooldown;
-//    while (gw.isOpen()) {
-//        while (auto event = gw.pollEvent()) {
-//            if (event->is<Event::Closed>()) {
-//                gw.getWindow().close();
-//                return BattleResult::PlayerDied;
-//            }
-//            if (auto* key = event->getIf<Event::KeyPressed>()) {
-//                if (inputCooldown.getElapsedTime().asMilliseconds() > 200) {
-//                    inputCooldown.restart();
-//
-//                    if (key->code == Keyboard::Key::Up)
-//                        selectedAction = (selectedAction - 1 + 4) % 4;
-//                    if (key->code == Keyboard::Key::Down)
-//                        selectedAction = (selectedAction + 1) % 4;
-//
-//                    if (key->code == Keyboard::Key::Enter) {
-//                        int result = playerTurn(
-//                            static_cast<BattleAction>(selectedAction));
-//
-//                        if (result == -1)
-//                            return BattleResult::PlayerExited;
-//
-//                        if (!enemy.isAlive()) {
-//                            addLog(enemy.getName() + " defeated! +"
-//                                + to_string(enemy.getXPReward()) + " XP");
-//                            player.gainXP(enemy.getXPReward());
-//                            drawBattleUI();
-//                            sleep(seconds(2.f));
-//                            return BattleResult::PlayerWon;
-//                        }
-//
-//                        if (enemy.getIsBoss()
-//                            && enemy.hasReachedHalfHealth()
-//                            && !bossHalfHealthTriggered) {
-//                            bossHalfHealthTriggered = true;
-//                            enemy.onHalfHealth();
-//                            addLog("!! " + enemy.getName() + " TRANSFORMS !!");
-//                        }
-//
-//                        enemyTurn();
-//
-//                        if (!player.isAlive()) {
-//                            addLog("You have fallen...");
-//                            drawBattleUI();
-//                            sleep(seconds(2.f));
-//                            return BattleResult::PlayerDied;
-//                        }
-//                    }
-//                }
-//            }
-//        }
-//        drawBattleUI();
-//    }
-//    return BattleResult::PlayerDied;
-//}
-
-
-
-//------------------------------------------------------------------------------------------
-// Battle.cpp
-// Real-time battle system.
-// FIX 1: Removed duplicate player.heal() call — useItemFromInventory already heals.
-// FIX 2: Removed dead inner-if in enemy AI damage — damage applied unconditionally.
-// FIX 3: Cursor triangle added next to selected action button.
-// FIX 4: HUD bars properly aligned — player top-left, enemy top-right.
-// FIX 5: Action menu is bottom-center, left to right, no '>' character.
-// FIX 6: Enemy sprite positioned bottom-right, player sprite bottom-left.
-
+﻿//------------------------------------------------ ( Battle.cpp ) -------------------------------------------------------------------------------
+// Real-time battle system...
 #include "Battle.h"
 #include "AssetLoader.h"
-#include <sstream>
-#include <algorithm>
 
 using namespace std;
 using namespace sf;
 
-// ─────────────────────────────────────────────────────────────────────────────
-// CONSTRUCTOR
-// ─────────────────────────────────────────────────────────────────────────────
-Battle::Battle(GameWindow& window, Veilwalker& p, Spirit& e,
-    AudioManager& audioRef, Sprite* bgSpr)
-    : gw(window), player(p), enemy(e), audio(audioRef), bgSprite(bgSpr),
-    buttonLabels{ Text(font), Text(font), Text(font), Text(font) }
+//-------------------------------------------------------------------------------
+// CONSTRUCTOR:-
+//-------------------------------------------------------------------------------
+Battle::Battle(GameWindow& window, Veilwalker& p, Spirit& e,AudioManager& audioRef, Sprite* bgSpr): gw(window), player(p), enemy(e), audio(audioRef), bgSprite(bgSpr),buttonLabels{ Text(font), Text(font), Text(font), Text(font) }
 {
-    // Load font with fallback.
-    AssetLoader::openFontWithFallback(font, {
-        "assets/font/ActionSpectral.ttf",
-        "assets/font/Philosopher-Bold.ttf"
-        });
-
-    // Initial feet positions on the ground line.
-    playerPos = { 150.f, groundY };
-    enemyPos = { static_cast<float>(gw.getWidth()) - 180.f, groundY };
-    enemyFacingLeft = true;
-
-    // Build the four action buttons across the bottom of the screen.
-    const float vw = static_cast<float>(gw.getWidth());
-    const float vh = static_cast<float>(gw.getHeight());
-    const string actions[4] = { "ATTACK", "ABILITY", "ITEM", "EXIT" };
-
-    // Total width of all buttons: 4 * 120 + 3 * 20 gaps = 540. Centered.
-    const float btnW = 120.f;
-    const float btnH = 38.f;
-    const float gap = 20.f;
-    const float totalW = 4.f * btnW + 3.f * gap;
-    const float startX = (vw - totalW) / 2.f;
-    const float btnY = vh - 60.f;
-
-    for (int i = 0; i < 4; i++)
-    {
-        menuButtons[i].setSize({ btnW, btnH });
-        menuButtons[i].setPosition({ startX + i * (btnW + gap), btnY });
-        menuButtons[i].setFillColor(Color(40, 40, 90));
-        menuButtons[i].setOutlineColor(Color(100, 100, 200));
-        menuButtons[i].setOutlineThickness(1.f);
-
-        buttonLabels[i].setFont(font);
-        buttonLabels[i].setString(actions[i]);
-        buttonLabels[i].setCharacterSize(16);
-        FloatRect lb = buttonLabels[i].getLocalBounds();
-        buttonLabels[i].setOrigin({ lb.size.x / 2.f, lb.size.y / 2.f });
-        buttonLabels[i].setPosition({ menuButtons[i].getPosition().x + btnW / 2.f,
-                                      btnY + btnH / 2.f });
-    }
-
-    // Build the cursor triangle.
-    buildCursor();
-
-    addLog("A wild " + enemy.getName() + " appears!");
-}
-
-// ─────────────────────────────────────────────────────────────────────────────
-// CURSOR TRIANGLE (points right, like a menu arrow)
-// ─────────────────────────────────────────────────────────────────────────────
-void Battle::buildCursor()
+AssetLoader::openFontWithFallback(font, {"assets/font/ActionSpectral.ttf","assets/font/Philosopher-Bold.ttf"});
+// Initial feet positions on the ground line...
+playerPos = { 150.f, groundY };
+enemyPos = { static_cast<float>(gw.getWidth()) - 180.f, groundY };
+enemyFacingLeft = true;
+// Build the four action buttons across the bottom of the screen.
+const float vw = static_cast<float>(gw.getWidth());
+const float vh = static_cast<float>(gw.getHeight());
+const string actions[4] = { "ATTACK", "ABILITY", "ITEM", "EXIT" };
+// Total width of all buttons: 4 * 120 + 3 * 20 gaps = 540. Centered.
+const float btnW = 120.f;
+const float btnH = 30.f;
+const float gap = 20.f;
+const float totalW = 4.f * btnW + 3.f * gap;
+const float startX = (vw - totalW) / 2.f;
+const float btnY = vh - 60.f;
+for (int i = 0; i < 4; i++)
 {
-    cursor.setPointCount(3);
-    cursor.setPoint(0, { 0.f,  0.f });
-    cursor.setPoint(1, { 0.f, 12.f });
-    cursor.setPoint(2, { 10.f, 6.f });
-    cursor.setFillColor(Color(255, 220, 60));
+menuButtons[i].setSize({ btnW, btnH });
+menuButtons[i].setPosition({ startX + i * (btnW + gap), btnY });
+menuButtons[i].setFillColor(Color(40, 40, 90));
+menuButtons[i].setOutlineColor(Color(100, 100, 200));
+menuButtons[i].setOutlineThickness(1.f);
+buttonLabels[i].setFont(font);
+buttonLabels[i].setString(actions[i]);
+buttonLabels[i].setCharacterSize(15);
+buttonLabels[i].setStyle(Text::Bold);
+FloatRect lb = buttonLabels[i].getLocalBounds();
+buttonLabels[i].setOrigin({ lb.size.x / 2.f, lb.size.y / 2.f });
+buttonLabels[i].setPosition({ menuButtons[i].getPosition().x + btnW / 2.f,btnY + btnH / 2.f });
 }
-
-// ─────────────────────────────────────────────────────────────────────────────
+addLog("A wild " + enemy.getName() + " appears!");
+}
+//-------------------------------------------------------------------------------
 // BATTLE LOG
-// ─────────────────────────────────────────────────────────────────────────────
+//-------------------------------------------------------------------------------
 void Battle::addLog(const string& msg)
 {
-    string upper;
-    for (char c : msg)
-        upper.push_back(static_cast<char>(toupper(static_cast<unsigned char>(c))));
-    battleLog.push_back(upper);
-    if (battleLog.size() > 5)
-        battleLog.erase(battleLog.begin());
+string upper;
+for (char c : msg)
+upper.push_back(static_cast<char>(toupper(static_cast<unsigned char>(c))));
+battleLog.push_back(upper);
+if (battleLog.size() > 5)
+battleLog.erase(battleLog.begin());
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// INPUT: arrow keys move player, Left/Right select action, Enter confirms.
-// Mouse hover highlights the button under the cursor.
-// ─────────────────────────────────────────────────────────────────────────────
+//--------------------------------------------------------------------------------
+// INPUT:-
+//--------------------------------------------------------------------------------
 void Battle::handleInput(float dt)
 {
-    // ── Player movement ───────────────────────────────────────────────────────
+    //Player movement...
     bool movingRight = Keyboard::isKeyPressed(Keyboard::Key::Right);
     bool movingLeft = Keyboard::isKeyPressed(Keyboard::Key::Left);
-
-    if (!showAbilityMenu)
+    bool jumping = Keyboard::isKeyPressed(Keyboard::Key::Up);
+    if (movingRight || movingLeft)
     {
-        // Left/Right keys also navigate action menu when not moving.
-        // We detect a tap (not hold) via a simple cooldown.
-        static Clock menuNavClock;
-        if (menuNavClock.getElapsedTime().asMilliseconds() > 180)
-        {
-            if (movingRight) { selectedAction = (selectedAction + 1) % 4; menuNavClock.restart(); }
-            if (movingLeft) { selectedAction = (selectedAction + 3) % 4; menuNavClock.restart(); }
-        }
+        float moveSpeed = 200.f;
+        playerPos.x += (movingRight ? moveSpeed : -moveSpeed) * dt;
+        player.getRenderer().setState(CharacterState::Walk);
+        player.getRenderer().setFacingRight(movingRight);
     }
-
-    // Up = jump.
-    if (Keyboard::isKeyPressed(Keyboard::Key::Up) && !playerJumping)
+    else if (!playerJumping)
+    {
+        player.getRenderer().setState(CharacterState::Idle);
+        player.getRenderer().setFacingRight(playerPos.x < enemyPos.x);
+    }
+    if (jumping && !playerJumping)
     {
         playerVelY = -500.f;
         playerJumping = true;
     }
-
-    // Update facing direction based on enemy position.
-    bool facingRight = (enemyPos.x > playerPos.x);
-    player.getRenderer().setFacingRight(facingRight);
-
-    // ── Mouse: hover highlights button ───────────────────────────────────────
     Vector2i mousePos = Mouse::getPosition(gw.getWindow());
     Vector2f mouseWorld = gw.getWindow().mapPixelToCoords(mousePos);
-
-    if (!showAbilityMenu)
+    bool buttonHovered = false;
+    bool abilityHovered = false;
+    static Clock actionClock;
+    bool confirmAction = Mouse::isButtonPressed(Mouse::Button::Left);
+    for (int i = 0; i < 4; i++)
     {
-        for (int i = 0; i < 4; i++)
+        if (menuButtons[i].getGlobalBounds().contains(mouseWorld))
         {
-            if (menuButtons[i].getGlobalBounds().contains(mouseWorld))
+            buttonHovered = true;
+            selectedAction = i;
+            if (confirmAction && actionClock.getElapsedTime().asMilliseconds() > 250 && playerCanAct)
             {
-                selectedAction = i;
-                // Left click confirms.
-                if (Mouse::isButtonPressed(Mouse::Button::Left) && playerCanAct)
-                {
-                    static Clock clickClock;
-                    if (clickClock.getElapsedTime().asMilliseconds() > 300)
-                    {
-                        clickClock.restart();
-                        audio.playOptional("Click", 70.f);
-                        switch (i)
-                        {
-                        case 0: handlePlayerAttack();  break;
-                        case 1: handlePlayerAbility(); break;
-                        case 2: handlePlayerItem();    break;
-                        case 3: handleExit();          break;
-                        }
-                    }
-                }
-                break;
-            }
-        }
-    }
-    else
-    {
-        // Ability sub-menu mouse support.
-        for (size_t i = 0; i < abilityTexts.size(); i++)
-        {
-            if (abilityTexts[i].getGlobalBounds().contains(mouseWorld))
-            {
-                selectedAbilityIndex = static_cast<int>(i);
-                if (Mouse::isButtonPressed(Mouse::Button::Left))
-                {
-                    const auto& ab = player.getAbilities();
-                    if (player.getSpiritEnergy() >= ab[i].getEnergyCost())
-                    {
-                        int dmg = player.useAbility(static_cast<int>(i));
-                        applyDamageToEnemy(dmg);
-                        addLog(ab[i].getName() + " hits for " + to_string(dmg) + "!");
-                        player.getRenderer().setState(CharacterState::Ability);
-                        audio.playOptional("ability", 70.f);
-                    }
-                    else addLog("Not enough Spirit Energy!");
-                    showAbilityMenu = false;
-                }
-                break;
-            }
-        }
-    }
-
-    // ── Enter key confirms selected action ───────────────────────────────────
-    static Clock enterClock;
-    if (Keyboard::isKeyPressed(Keyboard::Key::Enter) && playerCanAct)
-    {
-        if (enterClock.getElapsedTime().asMilliseconds() > 300)
-        {
-            enterClock.restart();
-            audio.playOptional("Click", 70.f);
-
-            if (!showAbilityMenu)
-            {
-                switch (selectedAction)
+                actionClock.restart();
+                switch (i)
                 {
                 case 0: handlePlayerAttack();  break;
                 case 1: handlePlayerAbility(); break;
@@ -604,50 +106,66 @@ void Battle::handleInput(float dt)
                 case 3: handleExit();          break;
                 }
             }
-            else
+            break;
+        }
+    }
+    if (showAbilityMenu)
+    {
+        for (size_t i = 0; i < abilityTexts.size(); i++)
+        {
+            if (abilityTexts[i].getGlobalBounds().contains(mouseWorld))
             {
-                const auto& ab = player.getAbilities();
-                if (selectedAbilityIndex < static_cast<int>(ab.size()))
+                abilityHovered = true;
+                selectedAbilityIndex = static_cast<int>(i);
+                if (confirmAction && actionClock.getElapsedTime().asMilliseconds() > 250)
                 {
-                    if (player.getSpiritEnergy() >= ab[selectedAbilityIndex].getEnergyCost())
+                    actionClock.restart();
+                    const auto& ab = player.getAbilities();
+                    if (player.getSpiritEnergy() >= ab[i].getEnergyCost())
                     {
-                        int dmg = player.useAbility(selectedAbilityIndex);
+                        int dmg = player.useAbility(static_cast<int>(i));
                         applyDamageToEnemy(dmg);
-                        addLog(ab[selectedAbilityIndex].getName() +
-                            " hits for " + to_string(dmg) + "!");
+                        addLog(ab[i].getName() + " hits for " + to_string(dmg) + "!");
                         player.getRenderer().setState(CharacterState::Ability);
-                        audio.playOptional("ability", 70.f);
+                        audio.playOptional("ability", 60.f);
                     }
                     else addLog("Not enough Spirit Energy!");
+                        showAbilityMenu = false;
                 }
-                showAbilityMenu = false;
+                break;
             }
         }
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// COMBAT ACTIONS
-// ─────────────────────────────────────────────────────────────────────────────
+//-------------------------------------------------------------------------------
+// COMBAT ACTIONS:-
+//-------------------------------------------------------------------------------
 
 void Battle::handlePlayerAttack()
 {
-    if (playerAttackClock.getElapsedTime().asSeconds() < playerAttackCooldown)
-        return;
+if (playerAttackClock.getElapsedTime().asSeconds() < playerAttackCooldown)
+return;
+ player.getRenderer().setPosition(playerPos);
+enemy.getRenderer().setPosition(enemyPos);
+if (!player.getRenderer().getAttackBox().findIntersection(enemy.getRenderer().getGlobalBounds()).has_value())
+{
+addLog("Too far to attack!");
+return;
+}
+
     playerAttackClock.restart();
     player.getRenderer().setState(CharacterState::Attack);
     int dmg = player.attackEnemy();
     applyDamageToEnemy(dmg);
     addLog("You attack for " + to_string(dmg) + " dmg!");
-    audio.playOptional("attack", 70.f);
+    audio.playOptional("attack", 60.f);
 }
 
 void Battle::handlePlayerAbility()
 {
     const auto& ab = player.getAbilities();
     if (ab.empty()) { addLog("No abilities!"); return; }
-
-    // Toggle ability sub-menu.
     if (!showAbilityMenu)
     {
         showAbilityMenu = true;
@@ -658,9 +176,9 @@ void Battle::handlePlayerAbility()
         {
             Text t(font);
             t.setString(ab[i].getName() + "  (SP:" + to_string(ab[i].getEnergyCost()) + ")");
-            t.setCharacterSize(16);
+            t.setCharacterSize(12);
             t.setFillColor(Color(220, 200, 255));
-            t.setPosition({ vw / 2.f - 150.f, 300.f + static_cast<float>(i) * 32.f });
+            t.setPosition({ vw / 2.f - 130.f, 50.f + static_cast<float>(i) * 32.f });
             abilityTexts.push_back(t);
         }
     }
@@ -669,13 +187,10 @@ void Battle::handlePlayerAbility()
 void Battle::handlePlayerItem()
 {
     if (player.getInventory().getCount() == 0) { addLog("No items!"); return; }
-
-    // FIX: useItemFromInventory already calls heal() internally.
-    // Do NOT call player.heal() again here — that would double-heal.
     int healed = player.useItemFromInventory(0);
     addLog("Used item! Healed " + to_string(healed) + " HP.");
     player.getRenderer().setState(CharacterState::Item);
-    audio.playOptional("heal", 70.f);
+    audio.playOptional("heal", 60.f);
 }
 
 void Battle::handleExit()
@@ -684,9 +199,9 @@ void Battle::handleExit()
     playerCanAct = false;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// PHYSICS (gravity + floor collision)
-// ─────────────────────────────────────────────────────────────────────────────
+//----------------------------------------------------------------------------------------
+// PHYSICS (gravity + floor collision):-
+//----------------------------------------------------------------------------------------
 void Battle::updatePhysics(float dt)
 {
     if (playerJumping)
@@ -702,21 +217,38 @@ void Battle::updatePhysics(float dt)
         }
     }
 
-    // Clamp player inside screen width.
     playerPos.x = clamp(playerPos.x, 30.f, static_cast<float>(gw.getWidth()) - 30.f);
-}
+    playerPos.y = clamp(playerPos.y, 50.f, static_cast<float>(gw.getHeight()) - 50.f);
 
-// ─────────────────────────────────────────────────────────────────────────────
-// ENEMY AI
-// ─────────────────────────────────────────────────────────────────────────────
+    // Only block horizontal passing when grounded
+    if (!playerJumping)
+    {
+        const float minSeparation = 70.f;
+        float dx = playerPos.x - enemyPos.x;
+        if (abs(dx) < minSeparation)
+        {
+            if (dx <= 0.f)
+                playerPos.x = enemyPos.x - minSeparation;
+            else
+                playerPos.x = enemyPos.x + minSeparation;
+        }
+    }
+}
+//----------------------------------------------------------------------------
+// ENEMY AI:-
+// ---------------------------------------------------------------------------
 void Battle::updateEnemyAI(float dt)
 {
     float dx = playerPos.x - enemyPos.x;
     enemyFacingLeft = (dx < 0.f);
     enemy.getRenderer().setFacingRight(!enemyFacingLeft);
 
-    // Walk toward player if not within melee range and not mid-attack.
-    if (abs(dx) > 70.f && !enemyAttacking)
+    player.getRenderer().setPosition(playerPos);
+    enemy.getRenderer().setPosition(enemyPos);
+    bool enemyInRange = enemy.getRenderer().getAttackBox().findIntersection(player.getRenderer().getGlobalBounds()).has_value();
+
+    // Walk toward player if outside melee range and not mid-attack.
+    if (abs(dx) > 80.f && !enemyAttacking)
     {
         enemyPos.x += (dx > 0.f ? 1.f : -1.f) * enemySpeed * dt;
         enemy.getRenderer().setState(CharacterState::Walk);
@@ -726,10 +258,10 @@ void Battle::updateEnemyAI(float dt)
         enemy.getRenderer().setState(CharacterState::Idle);
     }
 
-    // Start an attack when cooldown is done and player is close.
+    // Start an attack when cooldown is done and player is within the enemy's melee reach.
     if (!enemyAttacking
         && enemyAttackClock.getElapsedTime().asSeconds() > enemyAttackCooldown
-        && abs(dx) < 120.f)
+        && enemyInRange)
     {
         enemyAttacking = true;
         enemyAttackClock.restart();
@@ -737,8 +269,6 @@ void Battle::updateEnemyAI(float dt)
         audio.playOptional("hit", 60.f);
     }
 
-    // End of attack animation: apply damage unconditionally.
-    // FIX: removed dead inner-if (was always true at this point anyway).
     if (enemyAttacking
         && enemyAttackClock.getElapsedTime().asSeconds() > enemyAttackDuration)
     {
@@ -749,9 +279,9 @@ void Battle::updateEnemyAI(float dt)
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+
 // DAMAGE HELPERS
-// ─────────────────────────────────────────────────────────────────────────────
+
 void Battle::applyDamageToPlayer(int dmg)
 {
     player.takeDamage(dmg);
@@ -761,26 +291,21 @@ void Battle::applyDamageToPlayer(int dmg)
 void Battle::applyDamageToEnemy(int dmg)
 {
     enemy.takeDamage(dmg);
-    enemy.getRenderer().setState(CharacterState::Block);
+    enemy.getRenderer().setState(CharacterState::Attack);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // ANIMATION UPDATE
-// ─────────────────────────────────────────────────────────────────────────────
+
 void Battle::updateAnimations(float dt)
 {
     player.getRenderer().update(dt);
     enemy.getRenderer().update(dt);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+
 // HUD DRAWING
-// Player bars: top-left  — sky blue / purple palette.
-// Enemy bars : top-right — black / gray / red palette.
-// ─────────────────────────────────────────────────────────────────────────────
-void Battle::drawGradientBar(float x, float y, float w, float h,
-    int current, int max,
-    Color left, Color right)
+
+void Battle::drawGradientBar(float x, float y, float w, float h,int current, int max,Color left, Color right)
 {
     // Dark trough.
     RectangleShape bg({ w, h });
@@ -806,7 +331,7 @@ void Battle::drawHUD()
 {
     const float vw = static_cast<float>(gw.getWidth());
 
-    // ── Player panel (top-left) ───────────────────────────────────────────────
+    // Player panel (top-left) 
     const float pX = 16.f;
 
     // Name and level.
@@ -848,7 +373,7 @@ void Battle::drawHUD()
     coinTxt.setPosition({ pX, 136.f });
     gw.getWindow().draw(coinTxt);
 
-    // ── Enemy panel (top-right) ───────────────────────────────────────────────
+    //  Enemy panel (top-right)
     const float eBarW = 220.f;
     const float eX = vw - eBarW - 16.f;
 
@@ -870,10 +395,8 @@ void Battle::drawHUD()
     gw.getWindow().draw(eHpTxt);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
 // ACTION MENU (bottom, left to right)
-// Highlighted button gets a bright border. Cursor arrow beside the label.
-// ─────────────────────────────────────────────────────────────────────────────
+
 void Battle::drawActionMenu()
 {
     for (int i = 0; i < 4; i++)
@@ -887,29 +410,27 @@ void Battle::drawActionMenu()
 
         buttonLabels[i].setFillColor(sel ? Color(255, 255, 100) : Color(200, 200, 240));
         gw.getWindow().draw(buttonLabels[i]);
-
-        // Draw cursor triangle to the left of selected button label.
-        if (sel)
-        {
-            Vector2f labelPos = buttonLabels[i].getPosition();
-            FloatRect lb = buttonLabels[i].getLocalBounds();
-            float cursorX = menuButtons[i].getPosition().x + 6.f;
-            float cursorY = labelPos.y - lb.size.y / 2.f;
-            cursor.setPosition({ cursorX, cursorY });
-            gw.getWindow().draw(cursor);
-        }
     }
+
+    // Input hint for hover + confirm controls.
+    const float vw = static_cast<float>(gw.getWidth());
+    Text hint(font, "HOVER TO SELECT, LEFT CLICK TO CONFIRM", 14);
+    hint.setFillColor(Color(180, 220, 255));
+    FloatRect hintBounds = hint.getLocalBounds();
+    hint.setOrigin({ hintBounds.size.x / 2.f, hintBounds.size.y / 2.f });
+    hint.setPosition({ vw / 2.f, menuButtons[0].getPosition().y - 24.f });
+    gw.getWindow().draw(hint);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+
 // ABILITY SUB-MENU
-// ─────────────────────────────────────────────────────────────────────────────
+
 void Battle::drawAbilityMenu()
 {
     // Semi-transparent panel behind the list.
     const float vw = static_cast<float>(gw.getWidth());
-    RectangleShape panel({ 340.f, 30.f + static_cast<float>(abilityTexts.size()) * 34.f });
-    panel.setPosition({ vw / 2.f - 170.f, 288.f });
+    RectangleShape panel({ 280.f, 30.f + static_cast<float>(abilityTexts.size()) * 34.f });
+    panel.setPosition({ vw / 2.f - 150.f, 30.f });
     panel.setFillColor(Color(20, 20, 60, 200));
     panel.setOutlineColor(Color(100, 100, 200));
     panel.setOutlineThickness(1.f);
@@ -920,19 +441,12 @@ void Battle::drawAbilityMenu()
         bool sel = (static_cast<int>(i) == selectedAbilityIndex);
         abilityTexts[i].setFillColor(sel ? Color(255, 255, 100) : Color(200, 180, 255));
         gw.getWindow().draw(abilityTexts[i]);
-
-        if (sel)
-        {
-            Vector2f pos = abilityTexts[i].getPosition();
-            cursor.setPosition({ pos.x - 18.f, pos.y + 2.f });
-            gw.getWindow().draw(cursor);
-        }
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// BATTLE LOG (center area)
-// ─────────────────────────────────────────────────────────────────────────────
+
+// BATTLE LOG:-
+
 void Battle::drawBattleLog()
 {
     const float vw = static_cast<float>(gw.getWidth());
@@ -948,10 +462,10 @@ void Battle::drawBattleLog()
     }
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
+// 
 // SPRITE DRAWING
 // Player: bottom-left area. Enemy: bottom-right area.
-// ─────────────────────────────────────────────────────────────────────────────
+
 void Battle::drawPlayerSprite()
 {
     player.getRenderer().setPosition(playerPos);
@@ -964,9 +478,9 @@ void Battle::drawEnemySprite()
     enemy.getRenderer().draw(gw.getWindow());
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// MAIN LOOP
-// ─────────────────────────────────────────────────────────────────────────────
+
+// MAIN LOOP:-
+
 BattleResult Battle::run()
 {
     Clock dtClock;
@@ -974,23 +488,24 @@ BattleResult Battle::run()
     while (gw.isOpen())
     {
         float dt = dtClock.restart().asSeconds();
-        if (dt > 0.1f) dt = 0.1f;  // cap delta time (prevents spiral of death)
+        if (dt > 0.1f) 
+            dt = 0.1f;
 
-        // ── Events ──────────────────────────────────────────────────────────
+        //  Events 
         while (auto ev = gw.pollEvent())
             if (ev->is<Event::Closed>())
                 gw.getWindow().close();
 
-        // Player chose to exit — return on next frame after logging.
+        // Player chose to exit — return on next frame after logging...
         if (!playerCanAct) return BattleResult::PlayerExited;
 
-        // ── Update ──────────────────────────────────────────────────────────
+        // Update ..
         handleInput(dt);
         updatePhysics(dt);
         updateEnemyAI(dt);
         updateAnimations(dt);
 
-        // ── Win / lose checks ────────────────────────────────────────────────
+        //  Win / lose checks..
         if (!player.isAlive())
         {
             player.getRenderer().setState(CharacterState::Dying);
@@ -1021,9 +536,10 @@ BattleResult Battle::run()
             bossPhaseTriggered = true;
             enemy.onHalfHealth();
             addLog("!! " + enemy.getName() + " TRANSFORMS !!");
+            enemy.getRenderer().setState(CharacterState::ShapeShift);
         }
 
-        // ── Draw ─────────────────────────────────────────────────────────────
+        // Draw 
         gw.clear();
 
         // Background.

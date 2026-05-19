@@ -1,4 +1,4 @@
-// GameWindow.cpp
+//------------------------------------ ( GameWindow.cpp ) --------------------------------------
 // Encapsulation...(private window, public interface)
 //this pointer used implicitly throughout member functions....
 
@@ -53,9 +53,10 @@ RenderWindow& GameWindow::getWindow()
 {
 return window;
 }
+
 //handles different events of window..
 optional<Event> GameWindow::pollEvent() 
 {
-//pollEvent accesses the queue of events from the os and pull events from queue is empty..
+//pollEvent accesses the queue of events from the os and pull events from queue until it is empty..
 return window.pollEvent();
 }

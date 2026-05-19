@@ -1,5 +1,4 @@
-// WelcomeScreen.cpp
-
+//---------------------------------- ( WelcomeScreen.cpp ) ---------------------------------------
     #include "WelcomeScreen.h"
     #include "AssetLoader.h"
     #include <cmath>
@@ -18,7 +17,8 @@
     AssetLoader::emplaceCoverSprite(bgTex, bgSprite,{"assets/texture/Arcane_Arena.png","assets/texture/bg_arcane_arena_welcome.png","assets/texture/default.png"}, static_cast<float>(gw.getWidth()), static_cast<float>(gw.getHeight()));
     const float cx = static_cast<float>(gw.getWidth()) * 0.5f;
     const float h = static_cast<float>(gw.getHeight());
-    //TITLE TEXT
+
+    //TITLE TEXT:-
     titleText.setString("ARCANE ARENA");
     titleText.setCharacterSize(68);
     titleText.setFillColor(Color(205, 185, 150));
@@ -28,7 +28,8 @@
 	FloatRect tb = titleText.getLocalBounds();//gets the bounding box of the text (size and position)
 	titleText.setOrigin({ tb.size.x / 2.f, tb.size.y / 2.f });//size is the width and height of the text..
 	titleText.setPosition({ cx, h * 0.45f });//dow upto 45% of the height of the window...
-    //SUB TITLE TEXT
+    
+    //SUB TITLE TEXT:-
     subtitleText.setFont(font);
     subtitleText.setString("A MYTHICAL GAMING UNIVERSE");
     subtitleText.setCharacterSize(24);
@@ -39,7 +40,8 @@
 	FloatRect sb = subtitleText.getLocalBounds();//local bound gives position of text relative to its own origin..
     subtitleText.setOrigin({ sb.size.x / 2.f, sb.size.y / 2.f });
     subtitleText.setPosition({ cx, h * 0.60f });
-    //PROMPT TEXT
+
+    //PROMPT TEXT:-
     promptText.setFont(font);
     promptText.setString("PRESS ENTER TO BEGIN..");
     promptText.setCharacterSize(22);
@@ -52,6 +54,7 @@
     promptText.setPosition({ cx, h * 0.85f });
     }
 
+    //RUN:-
     void WelcomeScreen::run()
     {
     Audio.PlayMusic("assets/audio/arcane_arena.ogg", 90.f);

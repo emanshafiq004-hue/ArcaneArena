@@ -45,7 +45,6 @@ int main() {
 
     GameStats::reset();
     sm.setBest(fm.getBestScoreFromFile());
-    FileManager::Settings settings = fm.loadSettings();
 
     //______________________Audio_________________________
     sf::SoundBuffer coinBuffer, gameoverBuffer;
@@ -79,15 +78,10 @@ int main() {
 
     //_________________Buttons________________________
     Button btnPlay(300.f, 240.f, 200.f, 46.f, "PLAY");
-    Button btnHigh(300.f, 298.f, 200.f, 46.f, "HIGH SCORES");
-    Button btnSet(300.f, 356.f, 200.f, 46.f, "SETTINGS");
     Button btnExit(300.f, 414.f, 200.f, 46.f, "EXIT");
     Button btnRetry(210.f, 380.f, 170.f, 46.f, "RETRY");
     Button btnMenu2(420.f, 380.f, 170.f, 46.f, "MENU");
     Button btnConfirm(310.f, 340.f, 180.f, 46.f, "START GAME");
-    Button btnBackHS(320.f, 500.f, 160.f, 46.f, "BACK");
-    Button btnSnd(300.f, 280.f, 200.f, 46.f, "SOUND: ON");
-    Button btnBackSet(320.f, 360.f, 160.f, 46.f, "BACK");
 
     // Pause button area (top-right corner)
     sf::FloatRect pauseRect = makeRect(BASE_W - 50.f, 6.f, 38.f, 32.f);
@@ -214,8 +208,6 @@ int main() {
                 if (state == State::Menu) {
                     if (btnPlay.rect.contains(p))
                         state = State::NameEntry;   // ask name first
-                    if (btnHigh.rect.contains(p)) state = State::HighScore;
-                    if (btnSet.rect.contains(p))  state = State::Settings;
                     if (btnExit.rect.contains(p)) window.close();
                 }
 
@@ -229,33 +221,6 @@ int main() {
                         state = State::Menu;
                 }
 
-                // High score
-                if (state == State::HighScore &&
-                    btnBackHS.rect.contains(p))
-                    state = State::Menu;
-
-                // Settings
-                if (state == State::Settings) {
-                    if (btnSnd.rect.contains(p)) {
-                        settings.soundOn = !settings.soundOn;
-                        fm.saveSettings(settings);
-                        btnSnd.label = settings.soundOn ? "SOUND: ON" : "SOUND: OFF";
-
-                       
-                        if (settings.soundOn) {
-                            coinSound.setVolume(90.f);
-                            gameoverSound.setVolume(90.f);
-                            if (bgOk) bgMusic.setVolume(40.f);
-                        }
-                        else {
-                            coinSound.setVolume(0.f);
-                            gameoverSound.setVolume(0.f);
-                            if (bgOk) bgMusic.setVolume(0.f);
-                        }
-                    }
-                    if (btnBackSet.rect.contains(p))
-                        state = State::Menu;
-                }
             }
 
         } // end pollEvent
@@ -340,7 +305,7 @@ int main() {
         switch (state) {
         case State::Menu:
             ui.drawMenu(sm, totalTime, totalTime,
-                btnPlay, btnHigh, btnSet, btnExit, mp);
+                btnPlay, btnExit, mp);
             break;
         case State::NameEntry:
             ui.drawNameEntry(sm, playerName, totalTime, btnConfirm, mp);
@@ -350,12 +315,6 @@ int main() {
             break;
         case State::Dead:
             ui.drawDead(sm, totalTime, btnRetry, btnMenu2, mp);
-            break;
-        case State::HighScore:
-            ui.drawHighScores(fm, btnBackHS, mp);
-            break;
-        case State::Settings:
-            ui.drawSettings(settings, btnSnd, btnBackSet, mp);
             break;
         default: break;
         }

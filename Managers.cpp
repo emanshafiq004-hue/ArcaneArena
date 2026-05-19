@@ -1,4 +1,6 @@
 #include "Managers.h"
+#include <ctime>
+#include <algorithm>
 
 
 void ScoreManager::reset(int best) {
@@ -44,9 +46,7 @@ float ScoreManager::gapSize() const {
     return gaps[tier()];
 }
 
-//  FileManager  (Exception Handling throughout)
-
-std::vector<ScoreEntry> FileManager::loadScores() {
+std::vector<ScoreEntry> FileManager_SkySurge::loadScores() {
     std::vector<ScoreEntry> entries;
     try {
         std::ifstream f(SCORE_FILE);
@@ -68,7 +68,7 @@ std::vector<ScoreEntry> FileManager::loadScores() {
     return entries;
 }
 
-void FileManager::saveScores(const std::vector<ScoreEntry>& entries) {
+void FileManager_SkySurge::saveScores(const std::vector<ScoreEntry>& entries) {
     try {
         std::ofstream f(SCORE_FILE);
         if (!f) throw std::runtime_error("Cannot write score file");
@@ -78,7 +78,7 @@ void FileManager::saveScores(const std::vector<ScoreEntry>& entries) {
     catch (const std::exception& ex) { (void)ex; }
 }
 
-void FileManager::addScore(const std::string& name, int score) {
+void FileManager_SkySurge::addScore(const std::string& name, int score) {
     auto entries = loadScores();
     std::time_t t = std::time(nullptr);
     std::tm tmBuf{};
@@ -92,19 +92,18 @@ void FileManager::addScore(const std::string& name, int score) {
         << std::setw(2) << std::setfill('0') << (tmBuf.tm_mon + 1) << "-"
         << std::setw(2) << std::setfill('0') << tmBuf.tm_mday;
     entries.push_back(ScoreEntry(name, score, ds.str()));
-    // Uses ScoreEntry::operator> — overloaded operator
     std::sort(entries.begin(), entries.end(),
         [](const ScoreEntry& a, const ScoreEntry& b) { return a > b; });
     if ((int)entries.size() > TOP5) entries.resize(TOP5);
     saveScores(entries);
 }
 
-int FileManager::getBestScoreFromFile() {
+int FileManager_SkySurge::getBestScoreFromFile() {
     auto e = loadScores();
     return e.empty() ? 0 : e[0].score;
 }
 
-FileManager::Settings FileManager::loadSettings() {
+FileManager_SkySurge::Settings FileManager_SkySurge::loadSettings() {
     Settings s;
     try {
         std::ifstream f(SETTING_FILE);
@@ -115,7 +114,7 @@ FileManager::Settings FileManager::loadSettings() {
     return s;
 }
 
-void FileManager::saveSettings(const Settings& s) {
+void FileManager_SkySurge::saveSettings(const Settings& s) {
     std::ofstream f(SETTING_FILE);
     f << (s.soundOn ? 1 : 0) << "\n";
 }

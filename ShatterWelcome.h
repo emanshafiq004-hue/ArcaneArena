@@ -1,7 +1,6 @@
 #pragma once
 #include <SFML/Graphics.hpp>
 #include <string>
-#include "ScoreStorage.h"
 #include "GameWindow.h"
 class ShatterWelcomeScreen
 {
@@ -17,8 +16,6 @@ private:
     sf::Text titleText;
     sf::RectangleShape startButton;
     sf::Text startText;
-    sf::RectangleShape scoreboardButton;   
-    sf::Text scoreboardText;     
     sf::RectangleShape exitButton;
     sf::Text exitText;
 
@@ -31,13 +28,9 @@ private:
     sf::Text hintText;
     sf::Text warningText;
 
-    // Scoreboard overlay elements
-    ShatterScoreManager scoreManager;     
-
     //State
     std::string playerName;
     bool showNameDialog;
-    bool showScoreboard;      
     bool showWarning;
     sf::Clock warningClock;
 
@@ -45,7 +38,6 @@ private:
     void setupMainScreen();
     void setupNameDialog();
     bool isClicked(const sf::RectangleShape& btn, sf::Vector2i mousePos);
-    void drawScoreboardOverlay(); 
 public:
     ShatterWelcomeScreen(GameWindow& gw);
     bool run();

@@ -1,1113 +1,4 @@
-﻿//#include "RealmOfEchoes.h"
-//#include "FileManager.h"
-//#include "Spirits.h"
-//#include "AssetLoader.h"
-//#include <sstream>
-//#include <iostream>
-//#include <algorithm>
-//#include <cstdlib>
-//#include <cctype>
-//
-//using namespace std;
-//using namespace sf;
-//
-//static const float kSurvivalSeconds = 30.f;
-//
-//// ─────────────────────────────────────────────────────────────────────────────
-//// Helpers
-//// ─────────────────────────────────────────────────────────────────────────────
-//
-//float RealmOfEchoes::centerX() const {
-//    return static_cast<float>(gw.getWidth()) * 0.5f;
-//}
-//
-//string RealmOfEchoes::upperText(const string& s) const {
-//    string out;
-//    out.reserve(s.size());
-//    for (unsigned char c : s)
-//        out.push_back(static_cast<char>(toupper(c)));
-//    return out;
-//}
-//
-//// ─────────────────────────────────────────────────────────────────────────────
-//// Audio setup  (unchanged)
-//// ─────────────────────────────────────────────────────────────────────────────
-//
-//void RealmOfEchoes::setupAudio() {
-//    audio.preloadOptional("ui", "assets/audio/ui_confirm.ogg");
-//    audio.preloadOptional("ui_move", "assets/audio/ui_move.ogg");
-//    audio.preloadOptional("hit", "assets/audio/battle_hit.ogg");
-//    audio.preloadOptional("block", "assets/audio/battle_block.ogg");
-//    audio.preloadOptional("boss", "assets/audio/boss_intro.ogg");
-//    audio.preloadOptional("boss_defeat", "assets/audio/boss_defeat.ogg");
-//    audio.preloadOptional("region0", "assets/audio/region_forest.ogg");
-//    audio.preloadOptional("region1", "assets/audio/region_temple.ogg");
-//    audio.preloadOptional("region2", "assets/audio/region_mountain.ogg");
-//    audio.preloadOptional("region3", "assets/audio/region_veil.ogg");
-//}
-//
-//// ─────────────────────────────────────────────────────────────────────────────
-//// Static background  (replaces the entire scroll system)
-//// ─────────────────────────────────────────────────────────────────────────────
-//
-//void RealmOfEchoes::clearStaticBackground() {
-//    staticBgSpr.reset();
-//}
-//
-//// Loads the first path that succeeds and scales it to cover the full viewport.
-//// Returns true if a texture was loaded.
-//bool RealmOfEchoes::loadStaticBackground(const vector<string>& paths) {
-//    staticBgSpr.reset();
-//    const float vw = static_cast<float>(gw.getWidth());
-//    const float vh = static_cast<float>(gw.getHeight());
-//    return AssetLoader::emplaceCoverSprite(staticBgTex, staticBgSpr, paths, vw, vh);
-//}
-//
-//// Per-region static background — same texture files that were previously scrolled.
-//// Also starts the matching region audio track.
-//void RealmOfEchoes::loadRegionBackground(int regionIndex) {
-//    if (regionIndex < 0 || regionIndex > 3) {
-//        clearStaticBackground();
-//        return;
-//    }
-//
-//    // Map region index → texture path (primary / fallback)
-//    static const char* paths[4][2] = {
-//        { "assets/texture/bg_forest.png",   "assets/textures/bg_forest.png"   },
-//        { "assets/texture/bg_temple.png",   "assets/textures/bg_temple.png"   },
-//        { "assets/texture/bg_mountain.png", "assets/textures/bg_mountain.png" },
-//        { "assets/texture/bg_veil.png",     "assets/textures/bg_veil.png"     },
-//    };
-//
-//    loadStaticBackground({ paths[regionIndex][0], paths[regionIndex][1] });
-//
-//    // Start region music
-//    static const char* audioKeys[4] = { "region0", "region1", "region2", "region3" };
-//    audio.playOptional(audioKeys[regionIndex], 38.f);
-//}
-//
-//// World-map static background.
-//void RealmOfEchoes::loadWorldMapBackground() {
-//    loadStaticBackground({
-//        "assets/texture/bg_roe_map.png",
-//        "assets/textures/bg_roe_map.png"
-//        });
-//}
-//
-//// Draw the static background — always the FIRST draw call each frame so every
-//// sprite, HUD element, and action button is rendered on top of it.
-//void RealmOfEchoes::drawBackdrop() {
-//    if (staticBgSpr)
-//        gw.getWindow().draw(*staticBgSpr);
-//}
-//
-//// ─────────────────────────────────────────────────────────────────────────────
-//// Save helper
-//// ─────────────────────────────────────────────────────────────────────────────
-//
-//void RealmOfEchoes::syncSave(int regionIndex, const Region& region) {
-//    questLog.setEncounterProgress(regionIndex, region.getEncounterIndex());
-//    try {
-//        FileManager::savePlayer(player->serialize(), questLog.serialize());
-//    }
-//    catch (const exception& e) {
-//        cerr << "[Save Error] " << e.what() << "\n";
-//    }
-//}
-//
-//int RealmOfEchoes::bossCoinReward(int regionIndex) const {
-//    return 50 + regionIndex * 25;
-//}
-//
-//// ─────────────────────────────────────────────────────────────────────────────
-//// Constructor / Destructor
-//// ─────────────────────────────────────────────────────────────────────────────
-//
-//RealmOfEchoes::RealmOfEchoes(GameWindow& window)
-//    : gw(window), player(nullptr), logger("saves/game_log.txt") {
-//    gw.setIconFromFile("assets/icon/realm_of_echoes.png");
-//    if (!AssetLoader::openFontWithFallback(font,
-//        { "assets/font/Philosopher-Bold.ttf", "assets/fonts/Philosopher-Bold.ttf" }))
-//        throw runtime_error("RealmOfEchoes: Cannot load font!");
-//    setupAudio();
-//    setupRegions();
-//    gw.setInterface(Color(13, 2, 33), "Realm of Echoes: Spirits & Shadows");
-//}
-//
-//RealmOfEchoes::~RealmOfEchoes() {
-//    delete player;
-//    player = nullptr;
-//}
-//
-//// ─────────────────────────────────────────────────────────────────────────────
-//// Region setup  (unchanged)
-//// ─────────────────────────────────────────────────────────────────────────────
-//
-//void RealmOfEchoes::setupRegions() {
-//    regions.clear();
-//
-//    Region forest("THE WHISPERING FOREST", Color(27, 94, 32), 0);
-//    forest.addEncounter({ EncounterType::Battle,          "A WILLOWISP FLICKERS IN THE MIST." });
-//    forest.addEncounter({ EncounterType::Negotiation,     "A CALM SPIRIT OFFERS A HINT: FOLLOW THE BLUE MOTH." });
-//    forest.addEncounter({ EncounterType::Battle,          "ROOTS TWIST LIKE FINGERS." });
-//    forest.addEncounter({ EncounterType::Shrine,          "A MOSSY SHRINE HUMS WITH SOFT LIGHT." });
-//    forest.addEncounter({ EncounterType::PhantomSurvival, "A PHANTOM WRAITH CIRCLES FOR A HUNGRY STARE." });
-//    forest.addEncounter({ EncounterType::Battle,          "THE FOREST EXHALES COLD AIR." });
-//    forest.addEncounter({ EncounterType::Negotiation,     "A GUIDE SPIRIT MARKS A SAFE PATH ON YOUR MAP." });
-//    forest.addEncounter({ EncounterType::Battle,          "SHADOWS MIMIC YOUR FOOTSTEPS." });
-//    forest.addEncounter({ EncounterType::Shrine,          "RUNES ON STONE PROMISE REST." });
-//    forest.addEncounter({ EncounterType::BossBattle,      "THE CORRUPTED HEART OF THE WOOD AWAKENS." });
-//    regions.push_back(forest);
-//
-//    Region temples("THE SUNKEN TEMPLES", Color(0, 77, 64), 1);
-//    temples.addEncounter({ EncounterType::Battle,          "A STONE GOLEM BLOCKS THE STAIR." });
-//    temples.addEncounter({ EncounterType::Battle,          "WATER SPIRITS WHISPER RIDDLES." });
-//    temples.addEncounter({ EncounterType::Negotiation,     "A PRIEST SPIRIT TEACHES A VEIL-BREATHING CHANT." });
-//    temples.addEncounter({ EncounterType::Shrine,          "CRYSTAL WATER REFLECTS STARS BELOW." });
-//    temples.addEncounter({ EncounterType::PhantomSurvival, "THE WRAITH DRAINS WARMTH FROM THE TORCHES." });
-//    temples.addEncounter({ EncounterType::Trickster,       "A FOX SPIRIT SWAPS YOUR FOOTPRINTS FOR LAUGHS." });
-//    temples.addEncounter({ EncounterType::Battle,          "CRACKS IN THE FLOOR BETRAY OLD TRAPS." });
-//    temples.addEncounter({ EncounterType::Battle,          "GUARDIAN MURMURS ECHO OFF THE WALLS." });
-//    temples.addEncounter({ EncounterType::PhantomSurvival, "THE WRAITH RETURNS BETWEEN THE PILLARS." });
-//    temples.addEncounter({ EncounterType::BossBattle,      "THE TEMPLE GUARDIAN RISES." });
-//    regions.push_back(temples);
-//
-//    Region mountains("THE CRIMSON MOUNTAINS", Color(183, 28, 28), 2);
-//    mountains.addEncounter({ EncounterType::Battle,          "AN EMBERWING SCREECHES OVERHEAD." });
-//    mountains.addEncounter({ EncounterType::Trickster,       "A HOT-WIND SPRITE DEMANDS A SILLY DANCE. YOU HUMOR IT." });
-//    mountains.addEncounter({ EncounterType::Battle,          "LAVA VEINS PULSE UNDER THE PATH." });
-//    mountains.addEncounter({ EncounterType::Negotiation,     "A CLIMBER SPIRIT SHARES A ROUTE AROUND THE CLIFF." });
-//    mountains.addEncounter({ EncounterType::Shrine,          "A HOT SPRING MISTS THE AIR." });
-//    mountains.addEncounter({ EncounterType::PhantomSurvival, "COLD MIST CONDENSES INTO A WRAITH." });
-//    mountains.addEncounter({ EncounterType::Battle,          "ASH STINGS YOUR EYES." });
-//    mountains.addEncounter({ EncounterType::Battle,          "THE PEAK HOWLS LIKE A BEAST." });
-//    mountains.addEncounter({ EncounterType::Negotiation,     "A HERMIT SPIRIT TRADES TALES FOR WARNINGS." });
-//    mountains.addEncounter({ EncounterType::BossBattle,      "THE EMBER TYRANT DESCENDS." });
-//    regions.push_back(mountains);
-//
-//    Region veil("THE VEIL GATE", Color(18, 0, 36), 3);
-//    veil.addEncounter({ EncounterType::Battle,          "SHADOWS TEAR AT THE EDGES OF YOUR SOUL." });
-//    veil.addEncounter({ EncounterType::Battle,          "THE VEIL ITSELF SHIMMERS WITH TEETH." });
-//    veil.addEncounter({ EncounterType::PhantomSurvival, "A WRAITH TESTS YOUR WILL IN THE VOID." });
-//    veil.addEncounter({ EncounterType::Negotiation,     "A QUIET ANCESTOR NAMES THE SOVEREIGN'S WEAKNESS: PATIENCE." });
-//    veil.addEncounter({ EncounterType::Trickster,       "A JESTER SPIRIT LIES FOR FUN, THEN VANISHES." });
-//    veil.addEncounter({ EncounterType::Battle,          "ECHOES OF FAILED WALKERS CLAW AT YOU." });
-//    veil.addEncounter({ EncounterType::Negotiation,     "A STAR-TETHERED GUIDE POINTS TRUE NORTH THROUGH THE VEIL." });
-//    const bool trapLeft = (rand() % 2) == 0;
-//    string lie = trapLeft
-//        ? string("THE MASTER TRICKSTER POINTS LEFT, SWEARING SALVATION WAITS THERE.")
-//        : string("THE MASTER TRICKSTER INSISTS THE RIGHT GATE IS THE TRUE PATH.");
-//    veil.addEncounter({ EncounterType::Trickster,   lie });
-//    veil.addEncounter({ EncounterType::GateChoice,  "TWO GATES OPEN. ONE IS A TRAP THAT REWINDS YOUR STEPS.", trapLeft });
-//    veil.addEncounter({ EncounterType::BossBattle,  "THE SHADOW SOVEREIGN RISES." });
-//    regions.push_back(veil);
-//}
-//
-//// ─────────────────────────────────────────────────────────────────────────────
-//// Shared draw helper
-//// ─────────────────────────────────────────────────────────────────────────────
-//
-//void RealmOfEchoes::drawCenteredText(const string& str, float y,
-//    unsigned int size, const Color& color) {
-//    Text text(font);
-//    text.setString(upperText(str));
-//    text.setCharacterSize(size);
-//    text.setFillColor(color);
-//    FloatRect b = text.getLocalBounds();
-//    text.setOrigin({ b.size.x / 2.f, b.size.y / 2.f });
-//    text.setPosition({ centerX(), y });
-//    gw.getWindow().draw(text);
-//}
-//
-//// ─────────────────────────────────────────────────────────────────────────────
-//// Name entry screen
-//// ─────────────────────────────────────────────────────────────────────────────
-//
-//string RealmOfEchoes::showNameEntryScreen() {
-//    gw.setInterface(Color(13, 2, 33), "Realm of Echoes - Enter Your Name");
-//    loadStaticBackground({
-//        "assets/texture/bg_roe_story_parchment.png",
-//        "assets/textures/bg_roe_story_parchment.png"
-//        });
-//
-//    string playerName;
-//    Text nameDisplay(font);
-//    nameDisplay.setCharacterSize(28);
-//    nameDisplay.setFillColor(Color(0, 245, 255));
-//    const float midY = static_cast<float>(gw.getHeight()) * 0.55f;
-//
-//    while (gw.isOpen()) {
-//        while (auto event = gw.pollEvent()) {
-//            if (event->is<Event::Closed>())
-//                gw.getWindow().close();
-//            if (auto* te = event->getIf<Event::TextEntered>()) {
-//                char c = static_cast<char>(te->unicode);
-//                if (c == '\b' && !playerName.empty())
-//                    playerName.pop_back();
-//                else if (c == '\r' || c == '\n')
-//                    continue;
-//                else if (c >= 32 && c < 127 && playerName.size() < 18 && c != '|')
-//                    playerName.push_back(c);
-//            }
-//            if (auto* key = event->getIf<Event::KeyPressed>())
-//                if (key->code == Keyboard::Key::Enter && !playerName.empty())
-//                    return playerName;
-//        }
-//
-//        nameDisplay.setString(upperText(playerName + "_"));
-//        FloatRect b = nameDisplay.getLocalBounds();
-//        nameDisplay.setOrigin({ b.size.x / 2.f, b.size.y / 2.f });
-//        nameDisplay.setPosition({ centerX(), midY });
-//
-//        // ── Render order: backdrop first, UI on top ──────────────────────
-//        gw.clear();
-//        drawBackdrop();
-//        drawCenteredText("ENTER YOUR NAME, VEILWALKER",
-//            static_cast<float>(gw.getHeight()) * 0.28f, 26, Color(240, 240, 255));
-//        drawCenteredText("(PRESS ENTER TO CONFIRM)",
-//            static_cast<float>(gw.getHeight()) * 0.36f, 16, Color(191, 0, 255));
-//        gw.getWindow().draw(nameDisplay);
-//        gw.display();
-//    }
-//    return "WANDERER";
-//}
-//
-//// ─────────────────────────────────────────────────────────────────────────────
-//// Story screen
-//// ─────────────────────────────────────────────────────────────────────────────
-//
-//void RealmOfEchoes::showStoryScreen() {
-//    loadStaticBackground({
-//        "assets/texture/bg_roe_story_parchment.png",
-//        "assets/textures/bg_roe_story_parchment.png"
-//        });
-//
-//    string story = questLog.getStoryIntro();
-//    if (story.empty())
-//        story = "You are the Veilwalker.\nBorn between worlds.\nOnly you can restore the balance.";
-//
-//    bool done = false;
-//    while (gw.isOpen() && !done) {
-//        while (auto event = gw.pollEvent()) {
-//            if (event->is<Event::Closed>())
-//                gw.getWindow().close();
-//            if (auto* key = event->getIf<Event::KeyPressed>())
-//                if (key->code == Keyboard::Key::Enter) {
-//                    audio.playOptional("ui");
-//                    done = true;
-//                }
-//        }
-//
-//        // ── Render order: backdrop first, text on top ─────────────────────
-//        gw.clear();
-//        drawBackdrop();
-//
-//        istringstream ss(story);
-//        string line;
-//        float y = static_cast<float>(gw.getHeight()) * 0.12f;
-//        while (getline(ss, line)) {
-//            Text lineText(font);
-//            lineText.setString(upperText(line));
-//            lineText.setCharacterSize(16);
-//            lineText.setFillColor(Color(240, 240, 255));
-//            lineText.setPosition({ 36.f, y });
-//            gw.getWindow().draw(lineText);
-//            y += 26.f;
-//        }
-//        drawCenteredText("PRESS ENTER TO CONTINUE",
-//            static_cast<float>(gw.getHeight()) * 0.88f, 15, Color(191, 0, 255));
-//        gw.display();
-//    }
-//}
-//
-//// ─────────────────────────────────────────────────────────────────────────────
-//// World map screen
-//// ─────────────────────────────────────────────────────────────────────────────
-//
-//void RealmOfEchoes::showWorldMapScreen(int& selectedRegion) {
-//    gw.setInterface(Color(15, 15, 35), "Realm of Echoes - World Map");
-//    gw.setIconFromFile("assets/icon/realm_of_echoes_map.png");
-//    loadWorldMapBackground();   // static, no scroll
-//
-//    struct Option { string label; int regionIndex; };
-//    vector<Option> options;
-//    for (int i = 0; i < 4; i++) {
-//        if (questLog.isRegionUnlocked(i)) {
-//            string label = regions[i].getName();
-//            if (questLog.isRegionComplete(i))
-//                label += " [DONE]";
-//            options.push_back({ label, i });
-//        }
-//    }
-//    options.push_back({ "SAVE & EXIT TO ARCANE ARENA", -1 });
-//
-//    vector<Text> optionTexts;
-//    optionTexts.reserve(options.size());
-//    for (size_t i = 0; i < options.size(); i++) {
-//        optionTexts.emplace_back(font);
-//        optionTexts[i].setString(upperText(options[i].label));
-//        optionTexts[i].setCharacterSize(22);
-//        FloatRect b = optionTexts[i].getLocalBounds();
-//        optionTexts[i].setOrigin({ b.size.x / 2.f, b.size.y / 2.f });
-//        optionTexts[i].setPosition({ centerX(), 120.f + static_cast<float>(i) * 48.f });
-//    }
-//
-//    int selected = 0;
-//    while (gw.isOpen() && !quitToHub) {
-//        while (auto event = gw.pollEvent()) {
-//            if (event->is<Event::Closed>()) {
-//                gw.getWindow().close();
-//                return;
-//            }
-//            if (auto* key = event->getIf<Event::KeyPressed>()) {
-//                if (key->code == Keyboard::Key::Up) {
-//                    audio.playOptional("ui");
-//                    selected = (selected - 1 + static_cast<int>(options.size()))
-//                        % static_cast<int>(options.size());
-//                }
-//                if (key->code == Keyboard::Key::Down) {
-//                    audio.playOptional("ui");
-//                    selected = (selected + 1) % static_cast<int>(options.size());
-//                }
-//                if (key->code == Keyboard::Key::Enter) {
-//                    audio.playOptional("ui");
-//                    if (options[selected].regionIndex == -1) {
-//                        try {
-//                            FileManager::savePlayer(player->serialize(), questLog.serialize());
-//                            FileManager::saveScore(player->getName(),
-//                                player->getLevel(), player->getXP());
-//                            logger.showMessage(&gw, font,
-//                                "\t\t\t\t GAME SAVED! \n RETURNING TO ARCANE ARENA...", 1.5f, staticBgTex, { "assets/texture/LogAndProfile.png","assets/texture/default.png" }, staticBgSpr, gw.getWidth(), gw.getHeight());
-//                            logger.logToFile("Player saved: " + player->getName());
-//                        }
-//                        catch (const exception& e) {
-//                            cerr << "[Save Error] " << e.what() << "\n";
-//                        }
-//                        selectedRegion = -1;
-//                        return;
-//                    }
-//                    selectedRegion = options[selected].regionIndex;
-//                    return;
-//                }
-//            }
-//        }
-//
-//        // ── Render order: backdrop first, UI on top ──────────────────────
-//        gw.clear();
-//        drawBackdrop();
-//
-//        drawCenteredText("THE VEILLANDS", 40.f, 30, Color(0, 245, 255));
-//        drawCenteredText("UP / DOWN  ENTER  (MAP)", 72.f, 14, Color(191, 0, 255));
-//
-//        for (size_t i = 0; i < optionTexts.size(); i++) {
-//            bool isSelected = (static_cast<int>(i) == selected);
-//            optionTexts[i].setFillColor(isSelected ? Color(0, 245, 255) : Color(200, 200, 220));
-//            optionTexts[i].setCharacterSize(isSelected ? 24 : 22);
-//            FloatRect b = optionTexts[i].getLocalBounds();
-//            optionTexts[i].setOrigin({ b.size.x / 2.f, b.size.y / 2.f });
-//            optionTexts[i].setPosition({ centerX(), 120.f + static_cast<float>(i) * 48.f });
-//            gw.getWindow().draw(optionTexts[i]);
-//        }
-//
-//        if (player) {
-//            Text stats(font);
-//            stats.setString(upperText(
-//                player->getName() + "  LV." + to_string(player->getLevel()) +
-//                "  HP " + to_string(player->getHp()) + "/" + to_string(player->getMaxHp()) +
-//                "  COINS " + to_string(player->getCoins())));
-//            stats.setCharacterSize(14);
-//            stats.setFillColor(Color(57, 255, 20));
-//            stats.setPosition({ 16.f, static_cast<float>(gw.getHeight()) - 28.f });
-//            gw.getWindow().draw(stats);
-//        }
-//        gw.display();
-//    }
-//}
-//
-//// ─────────────────────────────────────────────────────────────────────────────
-//// Negotiation screen
-//// ─────────────────────────────────────────────────────────────────────────────
-//
-//void RealmOfEchoes::runNegotiationScreen(const string& msg) {
-//    bool done = false;
-//    while (gw.isOpen() && !done) {
-//        while (auto event = gw.pollEvent()) {
-//            if (event->is<Event::Closed>())
-//                gw.getWindow().close();
-//            if (auto* key = event->getIf<Event::KeyPressed>())
-//                if (key->code == Keyboard::Key::Enter) {
-//                    audio.playOptional("ui");
-//                    done = true;
-//                }
-//        }
-//
-//        gw.clear();
-//        drawBackdrop();
-//        drawCenteredText("GUIDANCE",
-//            static_cast<float>(gw.getHeight()) * 0.2f, 26, Color(191, 0, 255));
-//        Text body(font);
-//        body.setString(upperText(msg));
-//        body.setCharacterSize(15);
-//        body.setFillColor(Color(240, 240, 255));
-//        body.setPosition({ 40.f, static_cast<float>(gw.getHeight()) * 0.32f });
-//        gw.getWindow().draw(body);
-//        drawCenteredText("PRESS ENTER TO CONTINUE",
-//            static_cast<float>(gw.getHeight()) * 0.88f, 15, Color(0, 245, 255));
-//        gw.display();
-//    }
-//}
-//
-//// ─────────────────────────────────────────────────────────────────────────────
-//// Gate choice screen
-//// ─────────────────────────────────────────────────────────────────────────────
-//
-//bool RealmOfEchoes::runGateChoice(int regionIndex, Region& region, const Encounter& enc) {
-//    (void)regionIndex;
-//    int choice = 0;
-//    Clock frameClk;
-//    const bool trapLeft = enc.leftGateIsTrap;
-//
-//    Texture gateTex;
-//    optional<Sprite> gateLeftSpr;
-//    optional<Sprite> gateRightSpr;
-//
-//    if (AssetLoader::loadTextureWithFallback(gateTex, {
-//            string(R"(assets/gates/veil_gate(final).png)"),
-//            "assets/gates/veil_gate.png",
-//            "assets/gates/veil_gate_final.png" })) {
-//        gateTex.setSmooth(true);
-//        gateLeftSpr.emplace(gateTex);
-//        gateRightSpr.emplace(gateTex);
-//        const float targetH = static_cast<float>(gw.getHeight()) * 0.26f;
-//        const float sc = targetH / static_cast<float>(gateTex.getSize().y);
-//        gateLeftSpr->setScale({ sc, sc });
-//        gateRightSpr->setScale({ sc, sc });
-//        const Vector2u gts = gateTex.getSize();
-//        gateLeftSpr->setOrigin({ gts.x * 0.5f, gts.y * 0.92f });
-//        gateRightSpr->setOrigin({ gts.x * 0.5f, gts.y * 0.92f });
-//    }
-//
-//    while (gw.isOpen()) {
-//        while (auto event = gw.pollEvent()) {
-//            if (event->is<Event::Closed>())
-//                gw.getWindow().close();
-//            if (auto* key = event->getIf<Event::KeyPressed>()) {
-//                if (key->code == Keyboard::Key::Left || key->code == Keyboard::Key::A) choice = 0;
-//                if (key->code == Keyboard::Key::Right || key->code == Keyboard::Key::D) choice = 1;
-//                if (key->code == Keyboard::Key::Up || key->code == Keyboard::Key::Down)
-//                    choice = 1 - choice;
-//
-//                if (key->code == Keyboard::Key::Enter) {
-//                    audio.playOptional("ui");
-//                    const bool pickedLeft = (choice == 0);
-//                    const bool wrong = (pickedLeft && trapLeft) || (!pickedLeft && !trapLeft);
-//                    if (wrong) {
-//                        gw.clear();
-//                        drawBackdrop();
-//                        drawCenteredText("THE TRAP GATE CLAIMS YOU!",
-//                            static_cast<float>(gw.getHeight()) * 0.4f, 24, Color(255, 23, 68));
-//                        gw.display();
-//                        sleep(seconds(2.f));
-//                        region.setEncounterIndex(0);
-//                        questLog.resetEncounterProgress(regionIndex);
-//                        syncSave(regionIndex, region);
-//                        return false;
-//                    }
-//                    gw.clear();
-//                    drawBackdrop();
-//                    drawCenteredText("THE TRUE PATH OPENS.",
-//                        static_cast<float>(gw.getHeight()) * 0.45f, 22, Color(57, 255, 20));
-//                    gw.display();
-//                    sleep(seconds(1.2f));
-//                    return true;
-//                }
-//            }
-//        }
-//
-//        // ── Render order: backdrop → gates (sprites) → labels → UI ───────
-//        gw.clear();
-//        drawBackdrop();
-//
-//        drawCenteredText("CHOOSE YOUR GATE",
-//            static_cast<float>(gw.getHeight()) * 0.12f, 24, Color(0, 245, 255));
-//        drawCenteredText(upperText(enc.description),
-//            static_cast<float>(gw.getHeight()) * 0.2f, 14, Color(240, 240, 255));
-//
-//        const float yGate = static_cast<float>(gw.getHeight()) * 0.62f;
-//        if (gateLeftSpr && gateRightSpr) {
-//            const float xL = static_cast<float>(gw.getWidth()) * 0.28f;
-//            const float xR = static_cast<float>(gw.getWidth()) * 0.72f;
-//            const float baseSc = static_cast<float>(gw.getHeight()) * 0.26f
-//                / static_cast<float>(gateTex.getSize().y);
-//            gateLeftSpr->setPosition({ xL, yGate });
-//            gateRightSpr->setPosition({ xR, yGate });
-//            gateLeftSpr->setScale({ baseSc * (choice == 0 ? 1.06f : 1.f),
-//                                    baseSc * (choice == 0 ? 1.06f : 1.f) });
-//            gateRightSpr->setScale({ baseSc * (choice == 1 ? 1.06f : 1.f),
-//                                     baseSc * (choice == 1 ? 1.06f : 1.f) });
-//            // Gate sprites drawn ON TOP of background
-//            gw.getWindow().draw(*gateLeftSpr);
-//            gw.getWindow().draw(*gateRightSpr);
-//        }
-//
-//        // Labels drawn on top of gate sprites
-//        Text leftLbl(font);
-//        leftLbl.setString(upperText(string(choice == 0 ? "> LEFT" : "  LEFT")));
-//        leftLbl.setCharacterSize(18);
-//        leftLbl.setFillColor(choice == 0 ? Color(0, 245, 255) : Color(191, 0, 255));
-//        FloatRect lb = leftLbl.getLocalBounds();
-//        leftLbl.setOrigin({ lb.size.x / 2.f, lb.size.y / 2.f });
-//        leftLbl.setPosition({
-//            static_cast<float>(gw.getWidth()) * 0.28f,
-//            yGate + static_cast<float>(gw.getHeight()) * 0.14f });
-//        gw.getWindow().draw(leftLbl);
-//
-//        Text rightLbl(font);
-//        rightLbl.setString(upperText(string(choice == 1 ? "> RIGHT" : "  RIGHT")));
-//        rightLbl.setCharacterSize(18);
-//        rightLbl.setFillColor(choice == 1 ? Color(0, 245, 255) : Color(191, 0, 255));
-//        lb = rightLbl.getLocalBounds();
-//        rightLbl.setOrigin({ lb.size.x / 2.f, lb.size.y / 2.f });
-//        rightLbl.setPosition({
-//            static_cast<float>(gw.getWidth()) * 0.72f,
-//            yGate + static_cast<float>(gw.getHeight()) * 0.14f });
-//        gw.getWindow().draw(rightLbl);
-//
-//        drawCenteredText("ARROWS / A-D  ENTER",
-//            static_cast<float>(gw.getHeight()) * 0.92f, 13, Color(255, 109, 0));
-//        gw.display();
-//    }
-//    return false;
-//}
-//
-//// ─────────────────────────────────────────────────────────────────────────────
-//// Phantom survival screen
-//// ─────────────────────────────────────────────────────────────────────────────
-//
-//void RealmOfEchoes::runPhantomSurvival(int regionIndex, Region& region) {
-//    const int hpStart = player->getHp();
-//    Clock timer;
-//    Clock hitClock;
-//    float hitInterval = 0.7f;
-//    bool done = false;
-//
-//    while (gw.isOpen() && !done) {
-//        float dt = timer.getElapsedTime().asSeconds();
-//
-//        while (auto event = gw.pollEvent()) {
-//            if (event->is<Event::Closed>())
-//                gw.getWindow().close();
-//            if (auto* key = event->getIf<Event::KeyPressed>())
-//                if (key->code == Keyboard::Key::Space || key->code == Keyboard::Key::Enter)
-//                    audio.playOptional("ui");
-//        }
-//
-//        if (dt >= kSurvivalSeconds)
-//            done = true;
-//
-//        if (hitClock.getElapsedTime().asSeconds() >= hitInterval) {
-//            hitClock.restart();
-//            player->takeRawDamage(1);
-//            audio.playOptional("hit");
-//        }
-//
-//        // ── Render order: backdrop first, HUD on top ─────────────────────
-//        gw.clear();
-//        drawBackdrop();
-//
-//        drawCenteredText("SURVIVE THE WRAITH",
-//            static_cast<float>(gw.getHeight()) * 0.15f, 22, Color(255, 109, 0));
-//
-//        ostringstream oss;
-//        oss.setf(ios::fixed);
-//        oss.precision(1);
-//        oss << "TIME LEFT: " << (kSurvivalSeconds - dt);
-//        drawCenteredText(oss.str(),
-//            static_cast<float>(gw.getHeight()) * 0.28f, 18, Color(0, 245, 255));
-//
-//        drawCenteredText("HOLD YOUR GROUND. EACH STING TAKES 1 HP.",
-//            static_cast<float>(gw.getHeight()) * 0.38f, 13, Color(240, 240, 255));
-//
-//        ostringstream hp;
-//        hp << "HP: " << player->getHp() << "/" << player->getMaxHp();
-//        drawCenteredText(hp.str(),
-//            static_cast<float>(gw.getHeight()) * 0.5f, 18, Color(57, 255, 20));
-//
-//        gw.display();
-//
-//        if (!player->isAlive())
-//            done = true;
-//    }
-//
-//    if (player->getHp() < hpStart)
-//        player->removeCoins(5);
-//    showShrineScreen(regionIndex, true);
-//}
-//
-//// ─────────────────────────────────────────────────────────────────────────────
-//// Shrine screen
-//// ─────────────────────────────────────────────────────────────────────────────
-//
-//void RealmOfEchoes::showShrineScreen(int regionIndex, bool fullRestore) {
-//    gw.setInterface(Color(13, 2, 33), "Realm of Echoes - Ancient Shrine");
-//
-//    // Try shrine art first; fall back to the region's static BG
-//    const bool shrineArt = loadStaticBackground({
-//        "assets/texture/shrine.jpg",
-//        "assets/textures/shrine.jpg",
-//        "assets/texture/shrine.png"
-//        });
-//    if (!shrineArt)
-//        loadRegionBackground(regionIndex);
-//
-//    if (fullRestore) {
-//        player->heal(player->getMaxHp());
-//        player->restoreEnergy(player->getMaxEnergy());
-//    }
-//    else {
-//        player->heal(40);
-//        player->restoreEnergy(player->getMaxEnergy());
-//    }
-//
-//    bool done = false;
-//    while (gw.isOpen() && !done) {
-//        while (auto event = gw.pollEvent()) {
-//            if (event->is<Event::Closed>())
-//                gw.getWindow().close();
-//            if (auto* key = event->getIf<Event::KeyPressed>())
-//                if (key->code == Keyboard::Key::Enter) {
-//                    audio.playOptional("ui");
-//                    done = true;
-//                }
-//        }
-//
-//        gw.clear();
-//        drawBackdrop();
-//        drawCenteredText("ANCIENT SHRINE",
-//            static_cast<float>(gw.getHeight()) * 0.28f, 28, Color(191, 0, 255));
-//        drawCenteredText("YOU REST. VITALITY RETURNS.",
-//            static_cast<float>(gw.getHeight()) * 0.42f, 16, Color(240, 240, 255));
-//        drawCenteredText("PRESS ENTER TO CONTINUE",
-//            static_cast<float>(gw.getHeight()) * 0.88f, 15, Color(0, 245, 255));
-//        gw.display();
-//    }
-//
-//    // After shrine, restore the region's BG for whatever comes next
-//    if (shrineArt)
-//        loadRegionBackground(regionIndex);
-//}
-//
-//// ─────────────────────────────────────────────────────────────────────────────
-//// Post-battle choice screen
-//// ─────────────────────────────────────────────────────────────────────────────
-//
-//PostBattleChoice RealmOfEchoes::runPostBattleChoice(BattleResult result) {
-//    int choice = 0;
-//    Clock cooldown;
-//    const float h = static_cast<float>(gw.getHeight());
-//
-//    while (gw.isOpen()) {
-//        while (auto event = gw.pollEvent()) {
-//            if (event->is<Event::Closed>()) {
-//                gw.getWindow().close();
-//                return PostBattleChoice::ExitToHub;
-//            }
-//            if (auto* key = event->getIf<Event::KeyPressed>()) {
-//                if (cooldown.getElapsedTime().asMilliseconds() > 140) {
-//                    cooldown.restart();
-//                    if (key->code == Keyboard::Key::Up)   choice = (choice + 2) % 3;
-//                    if (key->code == Keyboard::Key::Down)  choice = (choice + 1) % 3;
-//                    if (key->code == Keyboard::Key::Enter) {
-//                        audio.playOptional("ui");
-//                        if (choice == 0) return PostBattleChoice::ContinuePath;
-//                        if (choice == 1) return PostBattleChoice::PlayAgain;
-//                        quitToHub = true;
-//                        try {
-//                            FileManager::savePlayer(player->serialize(), questLog.serialize());
-//                            FileManager::saveScore(player->getName(),
-//                                player->getLevel(), player->getXP());
-//                        }
-//                        catch (const exception& e) {
-//                            cerr << "[Save Error] " << e.what() << "\n";
-//                        }
-//                        return PostBattleChoice::ExitToHub;
-//                    }
-//                }
-//            }
-//        }
-//
-//        gw.clear();
-//        drawBackdrop();
-//        drawCenteredText(result == BattleResult::PlayerWon ? "BATTLE WON" : "BATTLE LOST",
-//            h * 0.18f, 26,
-//            result == BattleResult::PlayerWon ? Color(57, 255, 20) : Color(255, 23, 68));
-//        drawCenteredText("CHOOSE NEXT ACTION", h * 0.28f, 14, Color(240, 240, 255));
-//        drawCenteredText((choice == 0 ? "> " : "  ") + string("CONTINUE PATH"),
-//            h * 0.42f, 16, Color(0, 245, 255));
-//        drawCenteredText((choice == 1 ? "> " : "  ") + string("PLAY AGAIN (SAME STATE)"),
-//            h * 0.52f, 16, Color(191, 0, 255));
-//        drawCenteredText((choice == 2 ? "> " : "  ") + string("EXIT TO ARCANE ARENA"),
-//            h * 0.62f, 16, Color(255, 109, 0));
-//        gw.display();
-//    }
-//    return PostBattleChoice::ExitToHub;
-//}
-//
-//// ─────────────────────────────────────────────────────────────────────────────
-//// Region runner
-//// ─────────────────────────────────────────────────────────────────────────────
-//
-//void RealmOfEchoes::runRegion(int regionIndex) {
-//    Region& region = regions[regionIndex];
-//    region.setEncounterIndex(questLog.getEncounterProgress(regionIndex));
-//
-//    // Load the region's static background once before the encounter loop
-//    loadRegionBackground(regionIndex);
-//    gw.setInterface(region.getThemeColor(), "Realm of Echoes - " + region.getName());
-//
-//    while (gw.isOpen() && !quitToHub) {
-//        if (region.getEncounterIndex() >= region.getEncounterCount())
-//            break;
-//
-//        const Encounter& enc = region.peekEncounter();
-//
-//        // ── Non-battle encounters ─────────────────────────────────────────
-//        if (enc.type == EncounterType::Shrine) {
-//            showShrineScreen(regionIndex, false);
-//            region.advanceEncounter();
-//            syncSave(regionIndex, region);
-//            continue;
-//        }
-//        if (enc.type == EncounterType::Negotiation) {
-//            runNegotiationScreen(enc.description);
-//            region.advanceEncounter();
-//            syncSave(regionIndex, region);
-//            continue;
-//        }
-//        if (enc.type == EncounterType::Trickster) {
-//            Text trickBody(font);
-//            trickBody.setString(upperText(enc.description));
-//            trickBody.setCharacterSize(14);
-//            trickBody.setFillColor(Color(240, 240, 255));
-//            bool done = false;
-//            while (gw.isOpen() && !done) {
-//                while (auto event = gw.pollEvent()) {
-//                    if (event->is<Event::Closed>())
-//                        gw.getWindow().close();
-//                    if (auto* key = event->getIf<Event::KeyPressed>())
-//                        if (key->code == Keyboard::Key::Enter) {
-//                            audio.playOptional("ui");
-//                            done = true;
-//                        }
-//                }
-//                gw.clear();
-//                drawBackdrop();
-//                drawCenteredText("TRICKSTER",
-//                    static_cast<float>(gw.getHeight()) * 0.18f, 26, Color(255, 109, 0));
-//                trickBody.setPosition({ 36.f, static_cast<float>(gw.getHeight()) * 0.3f });
-//                gw.getWindow().draw(trickBody);
-//                drawCenteredText("PRESS ENTER",
-//                    static_cast<float>(gw.getHeight()) * 0.88f, 14, Color(0, 245, 255));
-//                gw.display();
-//            }
-//            region.advanceEncounter();
-//            syncSave(regionIndex, region);
-//            continue;
-//        }
-//        if (enc.type == EncounterType::PhantomSurvival) {
-//            runPhantomSurvival(regionIndex, region);
-//            region.advanceEncounter();
-//            syncSave(regionIndex, region);
-//            continue;
-//        }
-//        if (enc.type == EncounterType::GateChoice) {
-//            if (runGateChoice(regionIndex, region, enc))
-//                region.advanceEncounter();
-//            syncSave(regionIndex, region);
-//            continue;
-//        }
-//
-//        // ── Normal battle ─────────────────────────────────────────────────
-//        if (enc.type == EncounterType::Battle) {
-//            Spirit* enemy = region.createRandomEnemy();
-//            gw.setInterface(region.getThemeColor(), "Battle: " + enemy->getName());
-//
-//            // NOTE FOR Battle.cpp AUTHOR:
-//            // Ensure your render loop inside Battle::run() follows this order:
-//            //   1. window.clear()
-//            //   2. window.draw(backgroundSprite)       ← FIRST
-//            //   3. window.draw(enemySprite)            ← then sprites
-//            //   4. window.draw(playerSprite)
-//            //   5. window.draw(xpBar / statsHUD)       ← then HUD
-//            //   6. window.draw(actionButtons)          ← then actions
-//            //   7. window.display()
-//            // The background must never be drawn AFTER sprites or it covers them.
-//            Battle battle(gw, *player, *enemy);
-//            BattleResult result = battle.run();
-//            delete enemy;
-//
-//            if (result == BattleResult::PlayerExited) {
-//                try {
-//                    FileManager::savePlayer(player->serialize(), questLog.serialize());
-//                    FileManager::saveScore(player->getName(), player->getLevel(), player->getXP());
-//                    logger.showMessage(&gw, font, "\t\tGAME SAVED! \n RETURNING TO MAP...", 1.4f, staticBgTex, { "assets/texture/LogAndProfile.png","assets/texture/default.png" }, staticBgSpr,gw.getWidth(),gw.getHeight());
-//                }
-//                catch (const exception& e) {
-//                    cerr << "[Save Error] " << e.what() << "\n";
-//                }
-//                return;
-//            }
-//            if (result == BattleResult::PlayerDied) {
-//                gw.clear();
-//                drawBackdrop();
-//                drawCenteredText("YOU HAVE FALLEN...",
-//                    static_cast<float>(gw.getHeight()) * 0.42f, 28, Color(255, 23, 68));
-//                gw.display();
-//                sleep(seconds(2.f));
-//            }
-//            try {
-//                player->getInventory().addItem(Item("Healing Potion", ItemType::HealingPotion, 30));
-//            }
-//            catch (...) {}
-//
-//            PostBattleChoice pb = runPostBattleChoice(result);
-//            if (pb == PostBattleChoice::ExitToHub || quitToHub) return;
-//            if (pb == PostBattleChoice::PlayAgain)  continue;
-//
-//            region.advanceEncounter();
-//            syncSave(regionIndex, region);
-//            continue;
-//        }
-//
-//        // ── Boss battle ───────────────────────────────────────────────────
-//        if (enc.type == EncounterType::BossBattle) {
-//            audio.playOptional("boss", 55.f);
-//            Spirit* boss = region.createBoss();
-//            gw.setInterface(Color(13, 2, 33), "BOSS: " + boss->getName());
-//
-//            // Same render-order note applies to the boss Battle instance
-//            Battle bossBattle(gw, *player, *boss);
-//            BattleResult result = bossBattle.run();
-//            delete boss;
-//
-//            if (result == BattleResult::PlayerExited) {
-//                try {
-//                    FileManager::savePlayer(player->serialize(), questLog.serialize());
-//                    FileManager::saveScore(player->getName(), player->getLevel(), player->getXP());
-//                    logger.showMessage(&gw, font, "\t\t\t\t GAME SAVED! \n RETURNING TO MAP...", 1.4f, staticBgTex, { "assets/texture/LogAndProfile.png","assets/texture/default.png" }, staticBgSpr,gw.getWidth(),gw.getHeight());
-//                }
-//                catch (const exception& e) {
-//                    cerr << "[Save Error] " << e.what() << "\n";
-//                }
-//                return;
-//            }
-//            if (result == BattleResult::PlayerDied) {
-//                player->heal(player->getMaxHp());
-//                gw.clear();
-//                drawBackdrop();
-//                drawCenteredText("THE BOSS DEFEATED YOU!",
-//                    static_cast<float>(gw.getHeight()) * 0.4f, 24, Color(255, 109, 0));
-//                drawCenteredText("YOU AWAKEN AT FULL STRENGTH.",
-//                    static_cast<float>(gw.getHeight()) * 0.5f, 16, Color(57, 255, 20));
-//                gw.display();
-//                sleep(seconds(2.5f));
-//                syncSave(regionIndex, region);
-//                return;
-//            }
-//
-//            region.advanceEncounter();
-//            player->addCoins(bossCoinReward(regionIndex));
-//            region.markComplete();
-//            questLog.completeRegion(regionIndex);
-//            questLog.setCurrentRegion(min(3, regionIndex + 1));
-//            showRegionCompleteScreen(regionIndex);
-//            try {
-//                FileManager::savePlayer(player->serialize(), questLog.serialize());
-//                FileManager::saveScore(player->getName(), player->getLevel(), player->getXP());
-//                logger.logToFile("Region " + to_string(regionIndex) +
-//                    " completed by " + player->getName());
-//            }
-//            catch (const exception& e) {
-//                cerr << "[Save Error] " << e.what() << "\n";
-//            }
-//            if (questLog.isGameComplete())
-//                showEndingScreen();
-//            return;
-//        }
-//    }
-//}
-//
-//// ─────────────────────────────────────────────────────────────────────────────
-//// Region-complete screen
-//// ─────────────────────────────────────────────────────────────────────────────
-//
-//void RealmOfEchoes::showRegionCompleteScreen(int regionIndex) {
-//    const string names[] = {
-//        "WHISPERING FOREST", "SUNKEN TEMPLES", "CRIMSON MOUNTAINS", "VEIL GATE"
-//    };
-//    bool done = false;
-//    while (gw.isOpen() && !done) {
-//        while (auto event = gw.pollEvent()) {
-//            if (event->is<Event::Closed>())
-//                gw.getWindow().close();
-//            if (auto* key = event->getIf<Event::KeyPressed>())
-//                if (key->code == Keyboard::Key::Enter) {
-//                    audio.playOptional("ui");
-//                    done = true;
-//                }
-//        }
-//        gw.clear();
-//        drawBackdrop();
-//        drawCenteredText("REGION CLEARED!",
-//            static_cast<float>(gw.getHeight()) * 0.28f, 26, Color(57, 255, 20));
-//        drawCenteredText(names[regionIndex] + string(" SECURED."),
-//            static_cast<float>(gw.getHeight()) * 0.42f, 16, Color(240, 240, 255));
-//        drawCenteredText("PRESS ENTER FOR THE VEILLANDS.",
-//            static_cast<float>(gw.getHeight()) * 0.88f, 14, Color(191, 0, 255));
-//        gw.display();
-//    }
-//}
-//
-//// ─────────────────────────────────────────────────────────────────────────────
-//// Ending screen
-//// ─────────────────────────────────────────────────────────────────────────────
-//
-//void RealmOfEchoes::showEndingScreen() {
-//    bool done = false;
-//    while (gw.isOpen() && !done) {
-//        while (auto event = gw.pollEvent()) {
-//            if (event->is<Event::Closed>())
-//                gw.getWindow().close();
-//            if (auto* key = event->getIf<Event::KeyPressed>())
-//                if (key->code == Keyboard::Key::Enter) {
-//                    audio.playOptional("ui");
-//                    done = true;
-//                }
-//        }
-//        gw.clear();
-//        drawBackdrop();
-//        drawCenteredText("THE SHADOW SOVEREIGN FALLS!",
-//            static_cast<float>(gw.getHeight()) * 0.2f, 22, Color(0, 245, 255));
-//        drawCenteredText("BALANCE RETURNS TO THE VEILLANDS.",
-//            static_cast<float>(gw.getHeight()) * 0.32f, 15, Color(240, 240, 255));
-//        drawCenteredText(upperText("VEILWALKER: " + player->getName()),
-//            static_cast<float>(gw.getHeight()) * 0.48f, 16, Color(57, 255, 20));
-//        drawCenteredText("PRESS ENTER FOR ARCANE ARENA.",
-//            static_cast<float>(gw.getHeight()) * 0.88f, 14, Color(191, 0, 255));
-//        gw.display();
-//    }
-//}
-//
-//// ─────────────────────────────────────────────────────────────────────────────
-//// Main entry point
-//// ─────────────────────────────────────────────────────────────────────────────
-//
-//void RealmOfEchoes::run() {
-//    quitToHub = false;
-//
-//    string playerData, questData;
-//    FileManager::LoadStatus loadStatus = FileManager::loadPlayer(playerData, questData);
-//
-//    if (loadStatus != FileManager::LoadStatus::NotFound) {
-//        loadStaticBackground({
-//            "assets/texture/bg_roe_story_parchment.png",
-//            "assets/textures/bg_roe_story_parchment.png"
-//            });
-//
-//        bool decided = false, loadSave = false;
-//        while (gw.isOpen() && !decided) {
-//            while (auto event = gw.pollEvent()) {
-//                if (event->is<Event::Closed>())
-//                    gw.getWindow().close();
-//                if (auto* key = event->getIf<Event::KeyPressed>()) {
-//                    if (key->code == Keyboard::Key::L) {
-//                        loadSave = (loadStatus == FileManager::LoadStatus::Ok);
-//                        decided = true;
-//                    }
-//                    if (key->code == Keyboard::Key::N) {
-//                        decided = true;
-//                    }
-//                }
-//            }
-//            gw.clear();
-//            drawBackdrop();
-//            if (loadStatus == FileManager::LoadStatus::Ok) {
-//                drawCenteredText("SAVE FILE FOUND!",
-//                    static_cast<float>(gw.getHeight()) * 0.38f, 24, Color(0, 245, 255));
-//                drawCenteredText("L = LOAD    N = NEW GAME",
-//                    static_cast<float>(gw.getHeight()) * 0.48f, 16, Color(240, 240, 255));
-//            }
-//            else {
-//                drawCenteredText("SAVE FILE IS CORRUPT",
-//                    static_cast<float>(gw.getHeight()) * 0.36f, 24, Color(255, 109, 0));
-//                drawCenteredText("PRESS N FOR NEW GAME",
-//                    static_cast<float>(gw.getHeight()) * 0.48f, 16, Color(240, 240, 255));
-//            }
-//            gw.display();
-//        }
-//
-//        if (loadSave) {
-//            player = new Veilwalker("Loading...");
-//            try {
-//                player->deserialize(playerData);
-//                questLog.deserialize(questData);
-//            }
-//            catch (const exception& e) {
-//                delete player;
-//                player = nullptr;
-//                logger.showMessage(&gw, font,
-//                    string("SAVE CORRUPT: ") + e.what(), 2.0f, staticBgTex, { "assets/texture/LogAndProfile.png","assets/texture/default.png" }, staticBgSpr, gw.getWidth(),gw.getHeight());
-//                loadSave = false;
-//            }
-//
-//            if (loadSave && player) {
-//                try { questLog.loadStory("assets/data/story.txt"); }
-//                catch (...) {}
-//                logger.showMessage(&gw, font,"WELCOME BACK, " + upperText(player->getName()) + "!", 1.8f,staticBgTex, { "assets/texture/LogAndProfile.png","assets/texture/default.png" },staticBgSpr, gw.getWidth(), gw.getHeight());
-//
-//                while (gw.isOpen() && !quitToHub) {
-//                    int regionSelect = 0;
-//                    showWorldMapScreen(regionSelect);
-//                    if (regionSelect == -1) return;
-//                    if (!questLog.isRegionUnlocked(regionSelect)) continue;
-//                    runRegion(regionSelect);
-//                    if (quitToHub) return;
-//                    if (questLog.isGameComplete()) break;
-//                }
-//                return;
-//            }
-//        }
-//    }
-//
-//    // ── New game flow ─────────────────────────────────────────────────────
-//    string pName = showNameEntryScreen();
-//    player = new Veilwalker(pName);
-//    player->getInventory().addItem(Item("Healing Potion", ItemType::HealingPotion, 30, 2));
-//    player->getInventory().addItem(Item("Spirit Crystal", ItemType::SpiritCrystal, 20, 1));
-//    player->addCoins(10);
-//
-//    try { questLog.loadStory("assets/data/story.txt"); }
-//    catch (...) {}
-//    showStoryScreen();
-//
-//    while (gw.isOpen() && !quitToHub) {
-//        int selectedRegion = 0;
-//        loadWorldMapBackground();
-//        showWorldMapScreen(selectedRegion);
-//        if (selectedRegion == -1) break;
-//        if (!questLog.isRegionUnlocked(selectedRegion)) continue;
-//        runRegion(selectedRegion);
-//        if (quitToHub) return;
-//        if (questLog.isGameComplete()) break;
-//    }
-//}
-
-
-
-
-
-//------------------------------------------------------------------------------------
-// --------------------( RealmOfEchoes.cpp )----------------------------
+﻿// ------------------------------------( RealmOfEchoes.cpp )------------------------------------------------------------
 // Core game logic for Realm of Echoes: Spirits & Shadows.
 
 #include "RealmOfEchoes.h"
@@ -1125,227 +16,205 @@ using namespace sf;
 
 static const float kSurvivalSeconds = 30.f;
 
-// ─────────────────────────────────────────────────────────────────────────────
-// HELPERS
-// ─────────────────────────────────────────────────────────────────────────────
+//-----------------------------------------------------------------------------------------------------------------------
+// HELPERS:-
+//-----------------------------------------------------------------------------------------------------------------------
 
-float RealmOfEchoes::centerX() const
+//Centered X coordinate for text drawing...
+float RealmOfEchoes::centerX()const
 {
-    return static_cast<float>(gw.getWidth()) * 0.5f;
+return static_cast<float>(gw.getWidth()) * 0.5f;
 }
 
-// Convert a string to uppercase.
+// Convert a string to uppercase....
 string RealmOfEchoes::upperText(const string& s) const
 {
-    string out;
-    out.reserve(s.size());
-    for (unsigned char c : s)
-        out.push_back(static_cast<char>(toupper(c)));
-    return out;
+string out;
+out.reserve(s.size());
+for (unsigned char c : s)
+out.push_back(static_cast<char>(toupper(c)));
+return out;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// AUDIO SETUP
-// Dummy paths used — replace with real file paths when assets are ready.
-// ─────────────────────────────────────────────────────────────────────────────
+//----------------------------------------------------------------------------------------------------------------------
+// AUDIO SETUP :-
+//----------------------------------------------------------------------------------------------------------------------
 
 void RealmOfEchoes::setupAudio()
 {
-    // UI sounds (shared across all screens).
-    audio.preloadOptional("ui", "assets/audio/ui_confirm.ogg");
-    audio.preloadOptional("ui_move", "assets/audio/ui_move.ogg");
-    audio.preloadOptional("Click", "assets/audio/Main_Confirm.ogg");
-
-    // Battle sounds.
-    audio.preloadOptional("attack", "assets/audio/attack.ogg");
-    audio.preloadOptional("hit", "assets/audio/battle_hit.ogg");
-    audio.preloadOptional("block", "assets/audio/battle_block.ogg");
-    audio.preloadOptional("ability", "assets/audio/ability.ogg");
-    audio.preloadOptional("heal", "assets/audio/heal.ogg");
-
-    // Boss sounds.
-    audio.preloadOptional("boss", "assets/audio/boss_intro.ogg");
-    audio.preloadOptional("boss_defeat", "assets/audio/boss_defeat.ogg");
-
-    // Region ambient tracks (used as one-shot play for ambient; world map uses PlayMusic).
-    audio.preloadOptional("region0", "assets/audio/region_forest.ogg");
-    audio.preloadOptional("region1", "assets/audio/region_temple.ogg");
-    audio.preloadOptional("region2", "assets/audio/region_mountain.ogg");
-    audio.preloadOptional("region3", "assets/audio/region_veil.ogg");
+// UI sounds....
+audio.preloadOptional("ui", "assets/audio/ui_confirm.ogg");
+audio.preloadOptional("ui_move", "assets/audio/ui_move.ogg");
+audio.preloadOptional("Click", "assets/audio/Main_Confirm.ogg");
+// Battle sounds....
+audio.preloadOptional("attack", "assets/audio/attack.mp3");
+audio.preloadOptional("hit", "assets/audio/battle_hit.ogg");
+audio.preloadOptional("block", "assets/audio/battle_block.ogg");
+audio.preloadOptional("ability", "assets/audio/ability.ogg");
+audio.preloadOptional("heal", "assets/audio/heal.ogg");
+// Boss sounds.....
+audio.preloadOptional("boss", "assets/audio/boss_intro.ogg");
+audio.preloadOptional("boss_defeat", "assets/audio/boss_defeat.ogg");
+// Encounter sounds....
+audio.preloadOptional("guidance", "assets/audio/Guidance_spirit.ogg");
+audio.preloadOptional("phantom", "assets/audio/Phantom_Wraith.ogg");
+audio.preloadOptional("trickster", "assets/audio/Trickster.ogg");
+audio.preloadOptional("gate", "assets/audio/GateChoice.ogg");
+audio.preloadOptional("battlefield", "assets/audio/BattleField.ogg");
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// STATIC BACKGROUND
-// ─────────────────────────────────────────────────────────────────────────────
-
+//-----------------------------------------------------------------------------------------------------------------------
+// STATIC BACKGROUND:-
+//-----------------------------------------------------------------------------------------------------------------------
 void RealmOfEchoes::clearStaticBackground()
 {
-    staticBgSpr.reset();
+staticBgSpr.reset();
 }
 
 bool RealmOfEchoes::loadStaticBackground(const vector<string>& paths)
 {
-    staticBgSpr.reset();
-    const float vw = static_cast<float>(gw.getWidth());
-    const float vh = static_cast<float>(gw.getHeight());
-    return AssetLoader::emplaceCoverSprite(staticBgTex, staticBgSpr, paths, vw, vh);
+staticBgSpr.reset();
+const float vw = static_cast<float>(gw.getWidth());
+const float vh = static_cast<float>(gw.getHeight());
+return AssetLoader::emplaceCoverSprite(staticBgTex, staticBgSpr, paths, vw, vh);
 }
 
-// Load per-region background and start region audio (called once before region loop).
 void RealmOfEchoes::loadRegionBackground(int regionIndex)
 {
-    if (regionIndex < 0 || regionIndex > 3)
-    {
-        clearStaticBackground();
-        return;
-    }
-
-    static const char* texPaths[4][2] =
-    {
-        { "assets/texture/bg_forest.png",   "assets/texture/default.png" },
-        { "assets/texture/bg_temple.png",   "assets/texture/default.png" },
-        { "assets/texture/bg_mountain.png", "assets/texture/default.png" },
-        { "assets/texture/bg_veil.png",     "assets/texture/default.png" },
-    };
-
-    static const char* audioKeys[4] = { "region0", "region1", "region2", "region3" };
-    static const char* musicPaths[4] =
-    {
-        "assets/audio/region_forest.ogg",
-        "assets/audio/region_temple.ogg",
-        "assets/audio/region_mountain.ogg",
-        "assets/audio/region_veil.ogg",
-    };
-
-    loadStaticBackground({ texPaths[regionIndex][0], texPaths[regionIndex][1] });
-
-    // Start looping background music for this region.
-    audio.PlayMusic(musicPaths[regionIndex], 40.f);
-    (void)audioKeys;  // kept for reference; PlayMusic handles music now
+if (regionIndex < 0 || regionIndex > 3)
+{
+clearStaticBackground();
+return;
+}
+static const char* texPaths[4][2] =
+{
+{ "assets/texture/bg_forest.png",   "assets/texture/default.png" },
+{ "assets/texture/bg_temple.png",   "assets/texture/default.png" },
+{ "assets/texture/bg_mountain.png", "assets/texture/default.png" },
+{ "assets/texture/bg_veil.png",     "assets/texture/default.png" },
+};
+static const char* musicPaths[4] =
+{
+"assets/audio/region_forest.ogg",
+"assets/audio/region_temple.ogg",
+"assets/audio/region_mountain.ogg",
+"assets/audio/region_veil.ogg",
+};
+loadStaticBackground({ texPaths[regionIndex][0], texPaths[regionIndex][1] });
+audio.PlayMusic(musicPaths[regionIndex], 50.f);
 }
 
 void RealmOfEchoes::loadWorldMapBackground()
 {
-    loadStaticBackground({
-        "assets/texture/bg_roe_map.png",
-        "assets/texture/default.png"
-        });
+loadStaticBackground({"assets/texture/bg_roe_map.png","assets/texture/default.png"});
 }
 
-// Always the first draw call so everything else is on top.
 void RealmOfEchoes::drawBackdrop()
 {
-    if (staticBgSpr)
-        gw.getWindow().draw(*staticBgSpr);
+if (staticBgSpr)
+gw.getWindow().draw(*staticBgSpr);
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// SAVE HELPER
-// ─────────────────────────────────────────────────────────────────────────────
+//----------------------------------------------------------------------------------------------------------------------
+// SAVE HELPER:-
+//----------------------------------------------------------------------------------------------------------------------
 
 void RealmOfEchoes::syncSave(int regionIndex, const Region& region)
 {
-    questLog.setEncounterProgress(regionIndex, region.getEncounterIndex());
-    try
-    {
-        FileManager::savePlayer(player->serialize(), questLog.serialize());
-    }
-    catch (const exception& e)
-    {
-        cerr << "[Save Error] " << e.what() << "\n";
-    }
+questLog.setEncounterProgress(regionIndex, region.getEncounterIndex());
+try
+{
+FileManager::savePlayer(player->serialize(),questLog.serialize());
+}
+catch (const exception& e)
+{
+cerr << "[Save Error] " << e.what() <<endl;
+}
 }
 
-int RealmOfEchoes::bossCoinReward(int regionIndex) const
+int RealmOfEchoes::bossCoinReward(int regionIndex)const
 {
-    return 50 + regionIndex * 25;
+return 50 + regionIndex *50;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// CONSTRUCTOR / DESTRUCTOR
-// ─────────────────────────────────────────────────────────────────────────────
+//-----------------------------------------------------------------------------------------------------------------------
+// CONSTRUCTOR / DESTRUCTOR:-
+//-----------------------------------------------------------------------------------------------------------------------
 
-RealmOfEchoes::RealmOfEchoes(GameWindow& window,AudioManager& a)
-    : gw(window),audio(a), player(nullptr), logger("saves/game_log.txt")
+RealmOfEchoes::RealmOfEchoes(GameWindow& window,AudioManager& a): gw(window),audio(a),player(nullptr),logger("saves/game_log.txt")
 {
-    gw.setIconFromFile("assets/icon/realm_of_echoes.png");
-    if (!AssetLoader::openFontWithFallback(font,
-        { "assets/font/GameUILora.ttf", "assets/font/Philosopher-Bold.ttf" }))
-        throw runtime_error("RealmOfEchoes: Cannot load font!");
-
-    setupAudio();
-    setupRegions();
-
-    // FIX: Corrected title typo ("ECHES" -> "ECHOES").
-    gw.setInterface(Color(13, 2, 33), "REALM OF ECHOES: SPIRITS AND SHADOWS");
+gw.setIconFromFile("assets/icon/realm_of_echoes.png");
+if (!AssetLoader::openFontWithFallback(font,{ "assets/font/GameUILora.ttf", "assets/font/Philosopher-Bold.ttf" }))
+throw runtime_error("RealmOfEchoes: Cannot load font!");
+setupAudio();
+setupRegions();
+gw.setInterface(Color(13, 2, 33), "REALM OF ECHOES: SPIRITS AND SHADOWS");
 }
 
 RealmOfEchoes::~RealmOfEchoes()
 {
-    delete player;
-    player = nullptr;
+delete player;
+player = nullptr;
 }
 
-// ─────────────────────────────────────────────────────────────────────────────
-// REGION SETUP
-// Gate choice encounter added before each boss battle.
-// ─────────────────────────────────────────────────────────────────────────────
+//-----------------------------------------------------------------------------------------------------------------------
+// REGION SETUP:-
+//-----------------------------------------------------------------------------------------------------------------------
 
 void RealmOfEchoes::setupRegions()
 {
-    regions.clear();
+regions.clear();
+//Region 0: Whispering Forest...
+Region forest("THE WHISPERING FOREST", Color(27, 94, 32), 0);
+forest.addEncounter({ EncounterType::Battle, "A WILLOWISP FLICKERS IN THE MIST." });
+forest.addEncounter({ EncounterType::Negotiation, "A CALM SPIRIT OFFERS A HINT: FOLLOW THE BLUE MOTH." });
+forest.addEncounter({ EncounterType::Battle, "ROOTS TWIST LIKE FINGERS." });
+forest.addEncounter({ EncounterType::Shrine, "A MOSSY SHRINE HUMS WITH SOFT LIGHT." });
+forest.addEncounter({ EncounterType::PhantomSurvival, "A PHANTOM WRAITH CIRCLES WITH A HUNGRY STARE." });
+forest.addEncounter({ EncounterType::Battle, "THE FOREST EXHALES COLD AIR." });
+// Gate choice ..
+forest.addEncounter({ EncounterType::GateChoice, "TWO ANCIENT STONES MARK THE BOSS LAIR. CHOOSE THE TRUE GATE.", (rand() % 2) == 0 });
+forest.addEncounter({ EncounterType::BossBattle, "THE CORRUPTED HEART OF THE WOOD AWAKENS." });
+regions.push_back(forest);
 
-    // ── Region 0: Whispering Forest ───────────────────────────────────────────
-    Region forest("THE WHISPERING FOREST", Color(27, 94, 32), 0);
-    forest.addEncounter({ EncounterType::Battle,          "A WILLOWISP FLICKERS IN THE MIST." });
-    forest.addEncounter({ EncounterType::Negotiation,     "A CALM SPIRIT OFFERS A HINT: FOLLOW THE BLUE MOTH." });
-    forest.addEncounter({ EncounterType::Battle,          "ROOTS TWIST LIKE FINGERS." });
-    forest.addEncounter({ EncounterType::Shrine,          "A MOSSY SHRINE HUMS WITH SOFT LIGHT." });
-    forest.addEncounter({ EncounterType::PhantomSurvival, "A PHANTOM WRAITH CIRCLES WITH A HUNGRY STARE." });
-    forest.addEncounter({ EncounterType::Battle,          "THE FOREST EXHALES COLD AIR." });
-    // Gate choice always immediately before the boss.
-    forest.addEncounter({ EncounterType::GateChoice, "TWO ANCIENT STONES MARK THE BOSS LAIR. CHOOSE THE TRUE GATE.", (rand() % 2) == 0 });
-    forest.addEncounter({ EncounterType::BossBattle,  "THE CORRUPTED HEART OF THE WOOD AWAKENS." });
-    regions.push_back(forest);
+//Region 1: Sunken Temples...
+Region temples("THE SUNKEN TEMPLES", Color(0, 77, 64), 1);
+temples.addEncounter({ EncounterType::Battle, "A STONE GOLEM BLOCKS THE STAIR." });
+temples.addEncounter({ EncounterType::Battle, "WATER SPIRITS WHISPER RIDDLES." });
+temples.addEncounter({ EncounterType::Negotiation, "A PRIEST SPIRIT TEACHES A VEIL-BREATHING CHANT." });
+temples.addEncounter({ EncounterType::Shrine, "CRYSTAL WATER REFLECTS STARS BELOW." });
+temples.addEncounter({ EncounterType::PhantomSurvival, "THE WRAITH DRAINS WARMTH FROM THE TORCHES." });
+temples.addEncounter({ EncounterType::Trickster, "A FOX SPIRIT SWAPS YOUR FOOTPRINTS FOR LAUGHS." });
+temples.addEncounter({ EncounterType::Battle, "CRACKS IN THE FLOOR BETRAY OLD TRAPS." });
+//Gate choice..
+temples.addEncounter({ EncounterType::GateChoice, "A HALL OF PILLARS SPLITS IN TWO. WHICH PATH IS TRUE?", (rand() % 2) == 0 });
+temples.addEncounter({ EncounterType::BossBattle,  "THE TEMPLE GUARDIAN RISES." });
+regions.push_back(temples);
 
-    // ── Region 1: Sunken Temples ──────────────────────────────────────────────
-    Region temples("THE SUNKEN TEMPLES", Color(0, 77, 64), 1);
-    temples.addEncounter({ EncounterType::Battle,          "A STONE GOLEM BLOCKS THE STAIR." });
-    temples.addEncounter({ EncounterType::Battle,          "WATER SPIRITS WHISPER RIDDLES." });
-    temples.addEncounter({ EncounterType::Negotiation,     "A PRIEST SPIRIT TEACHES A VEIL-BREATHING CHANT." });
-    temples.addEncounter({ EncounterType::Shrine,          "CRYSTAL WATER REFLECTS STARS BELOW." });
-    temples.addEncounter({ EncounterType::PhantomSurvival, "THE WRAITH DRAINS WARMTH FROM THE TORCHES." });
-    temples.addEncounter({ EncounterType::Trickster,       "A FOX SPIRIT SWAPS YOUR FOOTPRINTS FOR LAUGHS." });
-    temples.addEncounter({ EncounterType::Battle,          "CRACKS IN THE FLOOR BETRAY OLD TRAPS." });
-    temples.addEncounter({ EncounterType::GateChoice, "A HALL OF PILLARS SPLITS IN TWO. WHICH PATH IS SAFE?", (rand() % 2) == 0 });
-    temples.addEncounter({ EncounterType::BossBattle,  "THE TEMPLE GUARDIAN RISES." });
-    regions.push_back(temples);
+//Region 2: Crimson Mountains...
+Region mountains("THE CRIMSON MOUNTAINS", Color(183, 28, 28), 2);
+mountains.addEncounter({ EncounterType::Battle, "AN EMBERWING SCREECHES OVERHEAD." });
+mountains.addEncounter({ EncounterType::Trickster, "A HOT-WIND SPRITE DEMANDS A SILLY DANCE. YOU HUMOR IT." });
+mountains.addEncounter({ EncounterType::Battle, "LAVA VEINS PULSE UNDER THE PATH." });
+mountains.addEncounter({ EncounterType::Negotiation, "A CLIMBER SPIRIT SHARES A ROUTE AROUND THE CLIFF." });
+mountains.addEncounter({ EncounterType::Shrine, "A HOT SPRING MISTS THE AIR." });
+mountains.addEncounter({ EncounterType::PhantomSurvival, "COLD MIST CONDENSES INTO A WRAITH." });
+mountains.addEncounter({ EncounterType::Battle, "ASH STINGS YOUR EYES." });
+mountains.addEncounter({ EncounterType::GateChoice, "TWO LEDGES OVER THE VOLCANO. PICK THE ONE THAT WON'T CRUMBLE.", (rand() % 2) == 0 });
+mountains.addEncounter({ EncounterType::BossBattle,  "THE EMBER TYRANT DESCENDS." });
+regions.push_back(mountains);
 
-    // ── Region 2: Crimson Mountains ──────────────────────────────────────────
-    Region mountains("THE CRIMSON MOUNTAINS", Color(183, 28, 28), 2);
-    mountains.addEncounter({ EncounterType::Battle,          "AN EMBERWING SCREECHES OVERHEAD." });
-    mountains.addEncounter({ EncounterType::Trickster,       "A HOT-WIND SPRITE DEMANDS A SILLY DANCE. YOU HUMOR IT." });
-    mountains.addEncounter({ EncounterType::Battle,          "LAVA VEINS PULSE UNDER THE PATH." });
-    mountains.addEncounter({ EncounterType::Negotiation,     "A CLIMBER SPIRIT SHARES A ROUTE AROUND THE CLIFF." });
-    mountains.addEncounter({ EncounterType::Shrine,          "A HOT SPRING MISTS THE AIR." });
-    mountains.addEncounter({ EncounterType::PhantomSurvival, "COLD MIST CONDENSES INTO A WRAITH." });
-    mountains.addEncounter({ EncounterType::Battle,          "ASH STINGS YOUR EYES." });
-    mountains.addEncounter({ EncounterType::GateChoice, "TWO LEDGES OVER THE VOLCANO. PICK THE ONE THAT WON'T CRUMBLE.", (rand() % 2) == 0 });
-    mountains.addEncounter({ EncounterType::BossBattle,  "THE EMBER TYRANT DESCENDS." });
-    regions.push_back(mountains);
-
-    // ── Region 3: The Veil Gate ───────────────────────────────────────────────
-    Region veil("THE VEIL GATE", Color(18, 0, 36), 3);
-    veil.addEncounter({ EncounterType::Battle,          "SHADOWS TEAR AT THE EDGES OF YOUR SOUL." });
-    veil.addEncounter({ EncounterType::Battle,          "THE VEIL ITSELF SHIMMERS WITH TEETH." });
-    veil.addEncounter({ EncounterType::PhantomSurvival, "A WRAITH TESTS YOUR WILL IN THE VOID." });
-    veil.addEncounter({ EncounterType::Negotiation,     "A QUIET ANCESTOR NAMES THE SOVEREIGN'S WEAKNESS: PATIENCE." });
-    veil.addEncounter({ EncounterType::Trickster,       "A JESTER SPIRIT LIES FOR FUN, THEN VANISHES." });
-    veil.addEncounter({ EncounterType::Battle,          "ECHOES OF FAILED WALKERS CLAW AT YOU." });
-    const bool trapLeft = (rand() % 2) == 0;
-    veil.addEncounter({ EncounterType::GateChoice, "TWO GATES OPEN. ONE IS A TRAP THAT REWINDS YOUR STEPS.", trapLeft });
-    veil.addEncounter({ EncounterType::BossBattle,  "THE SHADOW SOVEREIGN RISES." });
-    regions.push_back(veil);
+//Region 3: The Veil Gate...
+Region veil("THE VEIL GATE", Color(18, 0, 36), 3);
+veil.addEncounter({ EncounterType::Battle, "SHADOWS TEAR AT THE EDGES OF YOUR SOUL." });
+veil.addEncounter({ EncounterType::Battle, "THE VEIL ITSELF SHIMMERS WITH TEETH." });
+veil.addEncounter({ EncounterType::PhantomSurvival, "A WRAITH TESTS YOUR WILL IN THE VOID." });
+veil.addEncounter({ EncounterType::Negotiation, "A QUIET ANCESTOR NAMES THE SOVEREIGN'S WEAKNESS: PATIENCE." });
+veil.addEncounter({ EncounterType::Trickster, "A JESTER SPIRIT LIES FOR FUN, THEN VANISHES." });
+veil.addEncounter({ EncounterType::Battle, "ECHOES OF FAILED WALKERS CLAW AT YOU." });
+veil.addEncounter({ EncounterType::GateChoice, "TWO GATES OPEN. ONE IS A TRAP THAT REWINDS YOUR STEPS.",(rand() % 2) == 0});
+veil.addEncounter({ EncounterType::BossBattle, "THE SHADOW SOVEREIGN RISES." });
+regions.push_back(veil);
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1367,7 +236,6 @@ void RealmOfEchoes::drawCenteredText(const string& str, float y,
 
 // ─────────────────────────────────────────────────────────────────────────────
 // NAME ENTRY SCREEN
-// FIX: audio.PlayMusic moved BEFORE the loop (was inside, restarting every frame).
 // ─────────────────────────────────────────────────────────────────────────────
 
 string RealmOfEchoes::showNameEntryScreen()
@@ -1377,14 +245,13 @@ string RealmOfEchoes::showNameEntryScreen()
         "assets/texture/bg_roe_story_parchment.png",
         "assets/texture/default.png"
         });
-
-    // FIX: Start music ONCE before the loop.
     audio.PlayMusic("assets/audio/world_map.ogg", 80.f);
 
     string playerName;
     Text nameDisplay(font);
     nameDisplay.setCharacterSize(28);
-    nameDisplay.setFillColor(Color(0, 245, 255));
+    nameDisplay.setFillColor(Color(52, 34, 26));
+    nameDisplay.setStyle(Text::Bold);
     const float midY = static_cast<float>(gw.getHeight()) * 0.55f;
 
     while (gw.isOpen())
@@ -1419,9 +286,9 @@ string RealmOfEchoes::showNameEntryScreen()
         gw.clear();
         drawBackdrop();
         drawCenteredText("ENTER YOUR NAME, VEILWALKER",
-            static_cast<float>(gw.getHeight()) * 0.28f, 26, Color(240, 240, 255));
+            static_cast<float>(gw.getHeight()) * 0.28f, 26, Color(52, 34, 26));
         drawCenteredText("(PRESS ENTER TO CONFIRM)",
-            static_cast<float>(gw.getHeight()) * 0.36f, 16, Color(191, 0, 255));
+            static_cast<float>(gw.getHeight()) * 0.93f, 20, Color(212, 168, 92));
         gw.getWindow().draw(nameDisplay);
         gw.display();
     }
@@ -1434,6 +301,9 @@ string RealmOfEchoes::showNameEntryScreen()
 
 void RealmOfEchoes::showStoryScreen()
 {
+ sf::Font font;
+ if (!AssetLoader::openFontWithFallback(font, { "assets/font/StoryUncialAntiqua.ttf", "assets/font/Philosopher-Bold.ttf" }))
+        throw runtime_error("RealmOfEchoes: Cannot load font!");
     loadStaticBackground({
         "assets/texture/bg_roe_story_parchment.png",
         "assets/texture/default.png"
@@ -1465,21 +335,20 @@ void RealmOfEchoes::showStoryScreen()
             Text lineText(font);
             lineText.setString(upperText(line));
             lineText.setCharacterSize(16);
-            lineText.setFillColor(Color(240, 240, 255));
-            lineText.setPosition({ 36.f, y });
+            lineText.setFillColor(Color(52, 34, 26));
+            lineText.setPosition({ 50.f, y });
+            lineText.setStyle(Text::Bold);
             gw.getWindow().draw(lineText);
             y += 26.f;
         }
         drawCenteredText("PRESS ENTER TO CONTINUE",
-            static_cast<float>(gw.getHeight()) * 0.88f, 15, Color(191, 0, 255));
+            static_cast<float>(gw.getHeight()) * 0.93f, 20, Color(212, 168, 92));
         gw.display();
     }
 }
 
 // ─────────────────────────────────────────────────────────────────────────────
 // WORLD MAP SCREEN
-// FIX: audio.playOptional("worldMap") moved BEFORE the loop (was inside = every frame).
-// Cursor triangle highlights selected option.
 // ─────────────────────────────────────────────────────────────────────────────
 
 void RealmOfEchoes::showWorldMapScreen(int& selectedRegion)
@@ -1488,8 +357,26 @@ void RealmOfEchoes::showWorldMapScreen(int& selectedRegion)
     gw.setIconFromFile("assets/icon/realm_of_echoes_map.png");
     loadWorldMapBackground();
 
-    // FIX: Start world map music ONCE before the loop.
     audio.PlayMusic("assets/audio/world_map.ogg", 50.f);
+
+    if (player && player->getHp() <= 0)
+    {
+        player->heal(player->getMaxHp());
+        player->restoreEnergy(player->getMaxEnergy());
+        int previousRegion = max(0, questLog.getCurrentRegion() - 1);
+
+        gw.clear();
+        drawBackdrop();
+        drawCenteredText("REVIVED! RETURNING TO PREVIOUS REGION...",
+            static_cast<float>(gw.getHeight()) * 0.45f, 20, Color(0, 245, 255));
+        drawCenteredText("PRESS ENTER TO CONTINUE",
+            static_cast<float>(gw.getHeight()) * 0.60f, 16, Color(191, 0, 255));
+        gw.display();
+        sf::sleep(sf::seconds(2.f));
+
+        selectedRegion = previousRegion;
+        return;
+    }
 
     struct Option { string label; int regionIndex; };
     vector<Option> options;
@@ -1597,13 +484,13 @@ void RealmOfEchoes::showWorldMapScreen(int& selectedRegion)
         // Draw.
         gw.clear();
         drawBackdrop();
-        drawCenteredText("THE VEILLANDS", 40.f, 30, Color(0, 245, 255));
-        drawCenteredText("UP/DOWN  ENTER  TO SELECT", 72.f, 14, Color(191, 0, 255));
+        drawCenteredText("THE VEILLANDS", 40.f, 30, Color(52, 34, 26));
+        drawCenteredText("UP/DOWN  ENTER  TO SELECT", 72.f, 14, Color(212, 168, 92));
 
         for (size_t i = 0; i < optionTexts.size(); i++)
         {
             bool isSel = (static_cast<int>(i) == selected);
-            optionTexts[i].setFillColor(isSel ? Color(255, 255, 100) : Color(200, 200, 220));
+            optionTexts[i].setFillColor(isSel ? Color(255, 220, 100) : Color(212, 168, 92));
             optionTexts[i].setCharacterSize(isSel ? 24 : 22);
             FloatRect b = optionTexts[i].getLocalBounds();
             optionTexts[i].setOrigin({ b.size.x / 2.f, b.size.y / 2.f });
@@ -1642,6 +529,18 @@ void RealmOfEchoes::showWorldMapScreen(int& selectedRegion)
 
 void RealmOfEchoes::runNegotiationScreen(const string& msg)
 {
+    audio.playOptional("guidance");
+    // Load guidance spirit sprite
+    Texture guidanceTex;
+    optional<Sprite> guidanceSpr;
+    if (AssetLoader::loadTextureWithFallback(guidanceTex, { "assets/characters/guidance_spirit.png" })) {
+        guidanceTex.setSmooth(true);
+        guidanceSpr.emplace(guidanceTex);
+        const float targetH = static_cast<float>(gw.getHeight()) * 0.35f;
+        const float sc = targetH / static_cast<float>(guidanceTex.getSize().y);
+        guidanceSpr->setScale({ sc, sc });
+        guidanceSpr->setPosition({ static_cast<float>(gw.getWidth()) * 0.75f, static_cast<float>(gw.getHeight()) * 0.35f });
+    }
     bool done = false;
     while (gw.isOpen() && !done)
     {
@@ -1656,6 +555,7 @@ void RealmOfEchoes::runNegotiationScreen(const string& msg)
         drawBackdrop();
         drawCenteredText("GUIDANCE",
             static_cast<float>(gw.getHeight()) * 0.2f, 26, Color(191, 0, 255));
+        if (guidanceSpr) gw.getWindow().draw(*guidanceSpr);
         Text body(font);
         body.setString(upperText(msg));
         body.setCharacterSize(15);
@@ -1670,14 +570,11 @@ void RealmOfEchoes::runNegotiationScreen(const string& msg)
 
 // ─────────────────────────────────────────────────────────────────────────────
 // GATE CHOICE SCREEN
-// Called before every boss. Returns true = correct gate, false = trap.
-// FIX: Sleep() replaced with sf::sleep(). Cursor triangle replaces ">".
-// FIX: On wrong gate, reset is done ONLY inside this function (removed redundant
-//      reset in runRegion caller per the original bug analysis).
 // ─────────────────────────────────────────────────────────────────────────────
 
 bool RealmOfEchoes::runGateChoice(int regionIndex, Region& region, const Encounter& enc)
 {
+    audio.playOptional("gate");
     int choice = 0;
     const bool trapLeft = enc.leftGateIsTrap;
 
@@ -1836,10 +733,29 @@ bool RealmOfEchoes::runGateChoice(int regionIndex, Region& region, const Encount
 void RealmOfEchoes::runPhantomSurvival(int regionIndex, Region& region)
 {
     (void)region;
+    audio.playOptional("phantom");
     const int hpStart = player->getHp();
     Clock timer, hitClock;
     float hitInterval = 0.7f;
     bool done = false;
+    int currentFrame = 0;
+
+    // Load phantom wraith animation frames..
+    vector<Texture> phantomTextures;
+    vector<string> framePaths = { 
+        "assets/characters/PIdle.png", 
+        "assets/characters/PAttack.png", 
+        "assets/characters/PMove.png", 
+        "assets/characters/PSteal.png", 
+        "assets/characters/PDie.png" 
+    };
+    for (const auto& path : framePaths) {
+        Texture tex;
+        if (AssetLoader::loadTextureWithFallback(tex, { path })) {
+            tex.setSmooth(true);
+            phantomTextures.push_back(tex);
+        }
+    }
 
     while (gw.isOpen() && !done)
     {
@@ -1856,12 +772,23 @@ void RealmOfEchoes::runPhantomSurvival(int regionIndex, Region& region)
             hitClock.restart();
             player->takeRawDamage(1);
             audio.playOptional("hit");
+            currentFrame = (currentFrame + 1) % (int)phantomTextures.size();
         }
 
         gw.clear();
         drawBackdrop();
         drawCenteredText("SURVIVE THE WRAITH",
             static_cast<float>(gw.getHeight()) * 0.15f, 22, Color(255, 109, 0));
+
+        // Draw phantom wraith animation
+        if (!phantomTextures.empty()) {
+            Sprite phantomSpr(phantomTextures[currentFrame]);
+            const float targetH = static_cast<float>(gw.getHeight()) * 0.35f;
+            const float sc = targetH / static_cast<float>(phantomTextures[currentFrame].getSize().y);
+            phantomSpr.setScale({ sc, sc });
+            phantomSpr.setPosition({ centerX(), static_cast<float>(gw.getHeight()) * 0.35f });
+            gw.getWindow().draw(phantomSpr);
+        }
 
         ostringstream oss;
         oss.setf(ios::fixed); oss.precision(1);
@@ -2053,6 +980,18 @@ void RealmOfEchoes::runRegion(int regionIndex)
         // ── Trickster ─────────────────────────────────────────────────────────
         if (enc.type == EncounterType::Trickster)
         {
+            audio.playOptional("trickster");
+            // Load trickster sprite
+            Texture tricksterTex;
+            optional<Sprite> tricksterSpr;
+            if (AssetLoader::loadTextureWithFallback(tricksterTex, { "assets/characters/trickster.png" })) {
+                tricksterTex.setSmooth(true);
+                tricksterSpr.emplace(tricksterTex);
+                const float targetH = static_cast<float>(gw.getHeight()) * 0.35f;
+                const float sc = targetH / static_cast<float>(tricksterTex.getSize().y);
+                tricksterSpr->setScale({ sc, sc });
+                tricksterSpr->setPosition({ static_cast<float>(gw.getWidth()) * 0.75f, static_cast<float>(gw.getHeight()) * 0.35f });
+            }
             Text body(font);
             body.setString(upperText(enc.description));
             body.setCharacterSize(14);
@@ -2069,6 +1008,7 @@ void RealmOfEchoes::runRegion(int regionIndex)
                 gw.clear(); drawBackdrop();
                 drawCenteredText("TRICKSTER",
                     static_cast<float>(gw.getHeight()) * 0.18f, 26, Color(255, 109, 0));
+                if (tricksterSpr) gw.getWindow().draw(*tricksterSpr);
                 body.setPosition({ 36.f, static_cast<float>(gw.getHeight()) * 0.3f });
                 gw.getWindow().draw(body);
                 drawCenteredText("PRESS ENTER",
@@ -2106,7 +1046,8 @@ void RealmOfEchoes::runRegion(int regionIndex)
         // ── Normal Battle ─────────────────────────────────────────────────────
         if (enc.type == EncounterType::Battle)
         {
-            Spirit* enemy = region.createRandomEnemy();
+            audio.playOptional("battlefield");
+            Spirit* enemy = region.createEnemy();
             Battle battle(gw, *player, *enemy, audio,
                 staticBgSpr ? &(*staticBgSpr) : nullptr);
             BattleResult result = battle.run();
@@ -2115,8 +1056,10 @@ void RealmOfEchoes::runRegion(int regionIndex)
             if (result == BattleResult::PlayerExited) return;
 
             // Give healing potion after EVERY battle (win or lose) per requirements.
-            try { player->getInventory().addItem(Item("Healing Potion", ItemType::HealingPotion, 30)); }
-            catch (...) {}
+            if (!player->getInventory().addItem(Item("Healing Potion", ItemType::HealingPotion, 30))) {
+                // Inventory is full, but don't block progression.
+                // Player can still advance without the reward.
+            }
 
             if (result == BattleResult::PlayerDied)
             {
@@ -2311,8 +1254,12 @@ void RealmOfEchoes::run()
     player = new Veilwalker(pName);
 
     // Give starting items.
-    player->getInventory().addItem(Item("Healing Potion", ItemType::HealingPotion, 30, 2));
-    player->getInventory().addItem(Item("Spirit Crystal", ItemType::SpiritCrystal, 20, 1));
+    if (!player->getInventory().addItem(Item("Healing Potion", ItemType::HealingPotion, 30, 2))) {
+        // Starting items failed - inventory full (should not happen at game start).
+    }
+    if (!player->getInventory().addItem(Item("Spirit Crystal", ItemType::SpiritCrystal, 20, 1))) {
+        // Spirit crystal failed to add.
+    }
     player->addCoins(10);
 
     try { questLog.loadStory("assets/data/story.txt"); }

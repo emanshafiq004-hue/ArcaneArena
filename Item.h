@@ -1,11 +1,12 @@
-//Item.h
+//-------------------------------------------- ( Item.h ) --------------------------------------------------------
 #pragma once
 #include <string>
 using namespace std;
 
 enum class ItemType {HealingPotion,SpiritCrystal,AncientRelic};
 
-class Item {
+class Item 
+{
 private:
 string name;
 ItemType type;

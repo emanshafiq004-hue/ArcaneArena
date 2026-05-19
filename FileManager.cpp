@@ -193,3 +193,41 @@ bool FileManager::saveExists(const string& filename) {
     ifstream file(filename);
     return file.good();
 }
+
+int FileManager::getBestScoreFromFile(const string& filename) {
+    ifstream file(filename);
+    if (!file.is_open())
+        return 0;
+    int best = 0;
+    file >> best;
+    return best;
+}
+
+FileManager::Settings FileManager::loadSettings(const string& filename) {
+    Settings settings;
+    ifstream file(filename);
+    if (file.is_open()) {
+        int soundOn = 1;
+        file >> soundOn;
+        settings.soundOn = (soundOn != 0);
+    }
+    return settings;
+}
+
+void FileManager::saveSettings(const Settings& settings, const string& filename) {
+    ensureParentDirExists(filename);
+    ofstream file(filename, ios::trunc);
+    if (!file.is_open())
+        throw runtime_error("Cannot open settings file for writing!");
+    file << (settings.soundOn ? 1 : 0) << "\n";
+    file.close();
+}
+
+void FileManager::addScore(const string& playerName, int score, const string& filename) {
+    ensureParentDirExists(filename);
+    ofstream file(filename, ios::app);
+    if (!file.is_open())
+        throw runtime_error("Cannot open skysurge scores file!");
+    file << playerName << "," << score << "\n";
+    file.close();
+}

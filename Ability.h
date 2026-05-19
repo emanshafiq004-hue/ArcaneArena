@@ -1,19 +1,20 @@
-// Ability.h
+//------------------------------------------ ( Ability.h ) ---------------------------------------------------------------------------
 #pragma once
 #include <string>
-
 using namespace std;
 
-class Ability {
+class Ability 
+{
 private:
-    string name;
-    int energyCost;
-    int damage;
-    string description;
+string name;
+int energyCost;
+int damage;
+string description;
 public:
-    Ability(const string& name, int energyCost, int damage, const string& desc);
-    string getName() const;
-    int getEnergyCost() const;
-    int getDamage() const;
-    string getDescription() const;
+Ability(const string& name, int energyCost, int damage, const string& desc);
+//GETTERS:-
+string getName() const;
+int getEnergyCost() const;
+int getDamage() const;
+string getDescription() const;
 };

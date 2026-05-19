@@ -30,7 +30,6 @@ void ShatterScoreManager::load()
     std::ifstream file(FILE_PATH);
     if (!file.is_open())
     {
-        std::cout << "[ShatterScoreManager] No scores file found. Starting fresh.\n";
         return;
     }
 
@@ -66,7 +65,6 @@ void ShatterScoreManager::load()
 
     file.close();
     sortEntries();
-    std::cout << "[ShatterScoreManager] Loaded " << entries.size() << " score(s).\n";
 }
 
 //  ADD SCORE
@@ -76,8 +74,6 @@ void ShatterScoreManager::addScore(const std::string& name, int level, int score
     sortEntries();
     trimToTop5();
     save();
-    std::cout << "[ShatterScoreManager] Saved: " << name
-        << " | Level " << level << " | " << score << " pts\n";
 }
 
 //  GET HIGHEST SCORE
@@ -171,5 +167,4 @@ void ShatterScoreManager::save() const
         << MAX_ENTRIES << " only.      |\n";
     file << "=====================================================\n";
     file.close();
-    std::cout << "[ShatterScoreManager] scores.txt saved.\n";
 }

@@ -18,12 +18,24 @@ void CityBackground::addBuilding(float sx) {
 void CityBackground::buildGrid() {
     grid_.clear();
     for (float x = 0.f; x < BASE_W; x += 40.f) {
-        grid_.push_back(sf::Vertex(sf::Vector2f(x, 0.f), COL_GRID));
-        grid_.push_back(sf::Vertex(sf::Vector2f(x, BASE_H), COL_GRID));
+        sf::Vertex v1;
+        v1.position = sf::Vector2f(x, 0.f);
+        v1.color = COL_GRID;
+        grid_.push_back(v1);
+        sf::Vertex v2;
+        v2.position = sf::Vector2f(x, BASE_H);
+        v2.color = COL_GRID;
+        grid_.push_back(v2);
     }
     for (float y = 0.f; y < BASE_H; y += 40.f) {
-        grid_.push_back(sf::Vertex(sf::Vector2f(0.f, y), COL_GRID));
-        grid_.push_back(sf::Vertex(sf::Vector2f(BASE_W, y), COL_GRID));
+        sf::Vertex v3;
+        v3.position = sf::Vector2f(0.f, y);
+        v3.color = COL_GRID;
+        grid_.push_back(v3);
+        sf::Vertex v4;
+        v4.position = sf::Vector2f(BASE_W, y);
+        v4.color = COL_GRID;
+        grid_.push_back(v4);
     }
 }
 
@@ -53,12 +65,18 @@ void CityBackground::update(float dt) {
 void CityBackground::draw(sf::RenderTarget& rt) {
     // Gradient background
     sf::VertexArray bg(sf::PrimitiveType::Triangles, 6);
-    bg[0] = sf::Vertex(sf::Vector2f(0.f, 0.f), COL_BG_TOP);
-    bg[1] = sf::Vertex(sf::Vector2f(BASE_W, 0.f), COL_BG_TOP);
-    bg[2] = sf::Vertex(sf::Vector2f(BASE_W, BASE_H), COL_BG_BOT);
-    bg[3] = sf::Vertex(sf::Vector2f(0.f, 0.f), COL_BG_TOP);
-    bg[4] = sf::Vertex(sf::Vector2f(BASE_W, BASE_H), COL_BG_BOT);
-    bg[5] = sf::Vertex(sf::Vector2f(0.f, BASE_H), COL_BG_BOT);
+    bg[0].position = sf::Vector2f(0.f, 0.f);
+    bg[0].color = COL_BG_TOP;
+    bg[1].position = sf::Vector2f(BASE_W, 0.f);
+    bg[1].color = COL_BG_TOP;
+    bg[2].position = sf::Vector2f(BASE_W, BASE_H);
+    bg[2].color = COL_BG_BOT;
+    bg[3].position = sf::Vector2f(0.f, 0.f);
+    bg[3].color = COL_BG_TOP;
+    bg[4].position = sf::Vector2f(BASE_W, BASE_H);
+    bg[4].color = COL_BG_BOT;
+    bg[5].position = sf::Vector2f(0.f, BASE_H);
+    bg[5].color = COL_BG_BOT;
     rt.draw(bg);
 
     // Grid overlay
@@ -179,8 +197,7 @@ void UIRenderer::drawHUD(const ScoreManager& sm, float totalTime) {
 }
 
 void UIRenderer::drawMenu(const ScoreManager& sm, float totalTime, float,
-    Button& btnPlay, Button& btnHigh,
-    Button& btnSet, Button& btnExit,
+    Button& btnPlay, Button& btnExit,
     sf::Vector2f mp)
 {
     float ly = 80.f + 8.f * std::sin(totalTime * 1.2f);
@@ -195,8 +212,6 @@ void UIRenderer::drawMenu(const ScoreManager& sm, float totalTime, float,
         sf::Color(160, 200, 255, 200), true);
 
     drawButton(btnPlay, btnPlay.rect.contains(mp));
-    drawButton(btnHigh, btnHigh.rect.contains(mp));
-    drawButton(btnSet, btnSet.rect.contains(mp));
     drawButton(btnExit, btnExit.rect.contains(mp));
 
     drawText("BEST: " + std::to_string(sm.getBest()),
@@ -254,7 +269,7 @@ void UIRenderer::drawNameEntry(const ScoreManager& sm, const std::string& player
         BASE_W / 2.f, 448.f, 12, sf::Color(120, 160, 200, 160), true);
 }
 
-void UIRenderer::drawHighScores(FileManager& fm, Button& btnBackHS, sf::Vector2f mp) {
+void UIRenderer::drawHighScores(FileManager_SkySurge& fm, Button& btnBackHS, sf::Vector2f mp) {
     drawPanel(120.f, 80.f, 560.f, 400.f, sf::Color(4, 8, 40, 230), COL_HL);
     drawText("HIGH SCORES", BASE_W / 2.f, 108.f, 30, COL_HL, true);
 
@@ -273,7 +288,7 @@ void UIRenderer::drawHighScores(FileManager& fm, Button& btnBackHS, sf::Vector2f
     drawButton(btnBackHS, btnBackHS.rect.contains(mp));
 }
 
-void UIRenderer::drawSettings(FileManager::Settings& settings,
+void UIRenderer::drawSettings(FileManager_SkySurge::Settings& settings,
     Button& btnSnd, Button& btnBackSet,
     sf::Vector2f mp)
 {

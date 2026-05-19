@@ -1,10 +1,12 @@
+//--------------------------------------- ( AsetLoader.cpp ) ----------------------------------------------
 #include "AssetLoader.h"
 #include <algorithm>
 using namespace std;
 
+//Font Load:-
 bool AssetLoader::openFontWithFallback(sf::Font& font, const vector<string>& paths) 
 {
-//auto used to tell compiler to decide the return type...
+//auto used to tell compiler to decide the return type at compile time...
 for (const auto& path : paths) 
 {
 if (font.openFromFile(path))
@@ -13,6 +15,7 @@ return true;
 return false;
 }
 
+//Texture Load:-
 bool AssetLoader::loadTextureWithFallback(sf::Texture& texture, const vector<string>& paths) 
 {
 for (const auto& path : paths) 
@@ -23,6 +26,7 @@ return true;
 return false;
 }
 
+//Image Load:-
 bool AssetLoader::loadImageWithFallback(sf::Image& image, const vector<string>& paths) 
 {
 for (const auto& path : paths) 
@@ -32,7 +36,8 @@ return true;
 }
 return false;
 }
-//loadFromFile is different for every class in sf...
+
+//Cover Sprite Load:-
 bool AssetLoader::emplaceCoverSprite(sf::Texture& texture, optional<sf::Sprite>& outSprite, const vector<string>& paths,float viewWidth, float viewHeight) 
 {
 outSprite.reset();

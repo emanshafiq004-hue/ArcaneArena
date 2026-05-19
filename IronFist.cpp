@@ -15,7 +15,6 @@ enum GameState
     STATE_NAME_INPUT,
     STATE_CONTINUE_LIST,
     STATE_CONTINUE_PLAYER,
-    STATE_SCOREBOARD,
     STATE_INTRO,
     STATE_FIGHTING,
     STATE_YOU_WIN,
@@ -84,7 +83,8 @@ static bool isAcceptableNameChar(char32_t c)
 // ===============================================================
 //  Constructor
 // ===============================================================
-IronFist::IronFist(GameWindow& w) : gw(w) {}
+IronFist::IronFist(GameWindow& w, AudioManager& a)
+    : gw(w), audio(a) {}
 
 // ===============================================================
 //  run()  —  previously it was main()
@@ -190,12 +190,6 @@ void IronFist::run()
     bool menuSHeld = false;
     bool menuJHeld = false;
 
-    // Scoreboard navigation
-    int  sbIndex = 0;
-    bool sbWHeld = false;
-    bool sbSHeld = false;
-    bool sbJHeld = false;
-
     // Continue-list navigation
     int  contIndex = 0;
     bool contWHeld = false;
@@ -213,12 +207,14 @@ void IronFist::run()
     bool nameEscHeld = false;
 
     bool escHeld = false;
+    bool mouseLeftHeld = false;
 
     // ==============================================================
     //  GAME LOOP 
     // ==============================================================
     while (window.isOpen())
     {
+        sf::Vector2f mousePos = window.mapPixelToCoords(sf::Mouse::getPosition(window));
         // ============================================================
         //  EVENT POLLING
         // ============================================================
@@ -227,8 +223,10 @@ void IronFist::run()
         {
          
             if (ev->is<sf::Event::Closed>())
-                return;  
-
+            {
+                audio.Stop();
+               gw.getWindow().close();
+            }
             if (state == STATE_NAME_INPUT)
             {
                 if (auto* te = ev->getIf<sf::Event::TextEntered>())
@@ -265,32 +263,75 @@ void IronFist::run()
             if (escDown && !escHeld)
             {
                 escHeld = true;
+                audio.Stop();
                 return;
             }
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::Space))
+            {
                 state = STATE_MENU;
+             audio.PlayMusic("assets/Fist.mp3" , 30.f);
+            }
         }
 
         else if (state == STATE_MENU)
         {
-            
             if (escDown && !escHeld)
             {
                 escHeld = true;
+                audio.Stop();
                 return;
             }
 
+            sf::Text opt0 = makeCenteredText(font, "NEW GAME", 34,
+                sf::Color::White, 800.f, 280.f);
+            sf::Text opt1 = makeCenteredText(font, "CONTINUE", 34,
+                sf::Color::White, 800.f, 340.f);
+
+            if (opt0.getGlobalBounds().contains(mousePos))
+                menuIndex = 0;
+            else if (opt1.getGlobalBounds().contains(mousePos))
+                menuIndex = 1;
+
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W))
             {
-                if (!menuWHeld) { menuIndex = (menuIndex + 2) % 3; menuWHeld = true; }
+                if (!menuWHeld) { menuIndex = (menuIndex + 1) % 2; menuWHeld = true; }
             }
             else menuWHeld = false;
 
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S))
             {
-                if (!menuSHeld) { menuIndex = (menuIndex + 1) % 3; menuSHeld = true; }
+                if (!menuSHeld) { menuIndex = (menuIndex + 1) % 2; menuSHeld = true; }
             }
             else menuSHeld = false;
+
+            bool mouseClick = sf::Mouse::isButtonPressed(sf::Mouse::Button::Left);
+            if (mouseClick)
+            {
+                if (!mouseLeftHeld)
+                {
+                    mouseLeftHeld = true;
+                    if (opt0.getGlobalBounds().contains(mousePos))
+                    {
+                        nameInput.clear();
+                        nameEnterHeld = true;
+                        nameEscHeld = true;
+                        blinkClock.restart();
+                        state = STATE_NAME_INPUT;
+                    }
+                    else if (opt1.getGlobalBounds().contains(mousePos))
+                    {
+                        contIndex = 0;
+                        contWHeld = contSHeld = false;
+                        contJHeld = true;
+                        escHeld = true;
+                        state = STATE_CONTINUE_LIST;
+                    }
+                }
+            }
+            else
+            {
+                mouseLeftHeld = false;
+            }
 
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::J))
             {
@@ -312,13 +353,6 @@ void IronFist::run()
                         contJHeld = true;
                         escHeld = true;
                         state = STATE_CONTINUE_LIST;
-                    }
-                    else
-                    {
-                        sbIndex = 0;
-                        sbWHeld = sbSHeld = false;
-                        sbJHeld = true;
-                        state = STATE_SCOREBOARD;
                     }
                 }
             }
@@ -377,6 +411,19 @@ void IronFist::run()
 
             if (incompleteN > 0)
             {
+                const float ROW_H = 26.f;
+                const float START_Y = 195.f;
+                const sf::FloatRect listArea(
+                    sf::Vector2f(125.f, START_Y - 2.f),
+                    sf::Vector2f(540.f, ROW_H * incompleteN));
+
+                if (listArea.contains(mousePos))
+                {
+                    int hoverRow = (int)((mousePos.y - START_Y) / ROW_H);
+                    if (hoverRow >= 0 && hoverRow < incompleteN)
+                        contIndex = hoverRow;
+                }
+
                 if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W))
                 {
                     if (!contWHeld) {
@@ -394,6 +441,37 @@ void IronFist::run()
                     }
                 }
                 else contSHeld = false;
+
+                bool mouseClick = sf::Mouse::isButtonPressed(sf::Mouse::Button::Left);
+                if (mouseClick)
+                {
+                    if (!mouseLeftHeld)
+                    {
+                        mouseLeftHeld = true;
+                        for (int row = 0; row < incompleteN; row++)
+                        {
+                            float rowY = START_Y + row * ROW_H;
+                            sf::FloatRect rowRect(
+                                sf::Vector2f(125.f, rowY),
+                                sf::Vector2f(540.f, ROW_H));
+                            if (rowRect.contains(mousePos))
+                            {
+                                contIndex = row;
+                                int pi = sb.getIncompleteIndex(contIndex);
+                                if (pi >= 0)
+                                {
+                                    currentPlayerIdx = pi;
+                                    cpIndex = 0;
+                                    cpWHeld = cpSHeld = false;
+                                    cpJHeld = true;
+                                    state = STATE_CONTINUE_PLAYER;
+                                }
+                                break;
+                            }
+                        }
+                    }
+                }
+                else mouseLeftHeld = false;
 
                 if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::J))
                 {
@@ -424,6 +502,16 @@ void IronFist::run()
                 state = STATE_CONTINUE_LIST;
             }
 
+            sf::Text oStart = makeCenteredText(font, "RESUME", 28,
+                sf::Color::White, 800.f, 410.f);
+            sf::Text oBack = makeCenteredText(font, "BACK", 24,
+                sf::Color::White, 800.f, 460.f);
+
+            if (oStart.getGlobalBounds().contains(mousePos))
+                cpIndex = 0;
+            else if (oBack.getGlobalBounds().contains(mousePos))
+                cpIndex = 1;
+
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W))
             {
                 if (!cpWHeld) { cpIndex = (cpIndex == 0) ? 1 : 0; cpWHeld = true; }
@@ -435,6 +523,33 @@ void IronFist::run()
                 if (!cpSHeld) { cpIndex = (cpIndex == 1) ? 0 : 1; cpSHeld = true; }
             }
             else cpSHeld = false;
+
+            bool mouseClick = sf::Mouse::isButtonPressed(sf::Mouse::Button::Left);
+            if (mouseClick)
+            {
+                if (!mouseLeftHeld)
+                {
+                    mouseLeftHeld = true;
+                    if (oStart.getGlobalBounds().contains(mousePos))
+                    {
+                        if (cpIndex == 0 && currentPlayerIdx >= 0)
+                        {
+                            int next = sb.get(currentPlayerIdx).nextRound();
+                            if (next >= 1 && next <= 3)
+                            {
+                                startAtRound(next, state, player, creature, knight, samurai,
+                                    combat1, combat2, combat3, introClock);
+                            }
+                        }
+                    }
+                    else if (oBack.getGlobalBounds().contains(mousePos))
+                    {
+                        contJHeld = true;
+                        state = STATE_CONTINUE_LIST;
+                    }
+                }
+            }
+            else mouseLeftHeld = false;
 
             if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::J))
             {
@@ -460,59 +575,16 @@ void IronFist::run()
             else cpJHeld = false;
         }
 
-        else if (state == STATE_SCOREBOARD)
-        {
-            if (escDown && !escHeld)
-            {
-                escHeld = true;
-                menuIndex = 0;
-                menuWHeld = menuSHeld = false;
-                menuJHeld = true;
-                state = STATE_MENU;
-            }
-
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::W))
-            {
-                if (!sbWHeld) { sbIndex = (sbIndex == 0) ? 1 : 0; sbWHeld = true; }
-            }
-            else sbWHeld = false;
-
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::S))
-            {
-                if (!sbSHeld) { sbIndex = (sbIndex == 1) ? 0 : 1; sbSHeld = true; }
-            }
-            else sbSHeld = false;
-
-            if (sf::Keyboard::isKeyPressed(sf::Keyboard::Key::J))
-            {
-                if (!sbJHeld)
-                {
-                    sbJHeld = true;
-                    if (sbIndex == 0)
-                    {
-                        menuIndex = 0;
-                        menuWHeld = menuSHeld = false;
-                        menuJHeld = true;
-                        state = STATE_MENU;
-                    }
-                    else
-                    {
-                        sb.clearAll();
-                        sbIndex = 0;
-                        currentPlayerIdx = -1;
-                    }
-                }
-            }
-            else sbJHeld = false;
-        }
-
         // ----------------------------------------------------------------
         //  Stage 1 — Creature
         // ----------------------------------------------------------------
         else if (state == STATE_INTRO)
         {
             if (introClock.getElapsedTime().asSeconds() >= 3.5f)
+            {
                 state = STATE_FIGHTING;
+              
+            }
         }
 
         else if (state == STATE_FIGHTING)
@@ -523,6 +595,7 @@ void IronFist::run()
                 menuWHeld = menuSHeld = menuJHeld = false;
                 escHeld = true;
                 state = STATE_MENU;
+            
             }
             else
             {
@@ -587,6 +660,7 @@ void IronFist::run()
             {
                 player.reset(); knight.reset(); combat2 = CombatState();
                 state = STATE_INTRO_STAGE2; introClock.restart();
+                
             }
         }
 
@@ -596,7 +670,10 @@ void IronFist::run()
         else if (state == STATE_INTRO_STAGE2)
         {
             if (introClock.getElapsedTime().asSeconds() >= 3.5f)
+            {
                 state = STATE_FIGHTING_STAGE2;
+               
+            }
         }
 
         else if (state == STATE_FIGHTING_STAGE2)
@@ -674,6 +751,7 @@ void IronFist::run()
             {
                 player.reset(); samurai.reset(); combat3 = CombatState();
                 state = STATE_INTRO_STAGE3; introClock.restart();
+       
             }
         }
 
@@ -683,7 +761,10 @@ void IronFist::run()
         else if (state == STATE_INTRO_STAGE3)
         {
             if (introClock.getElapsedTime().asSeconds() >= 3.5f)
+            {
                 state = STATE_FIGHTING_STAGE3;
+             
+            }
         }
 
         else if (state == STATE_FIGHTING_STAGE3)
@@ -694,6 +775,7 @@ void IronFist::run()
                 menuWHeld = menuSHeld = menuJHeld = false;
                 escHeld = true;
                 state = STATE_MENU;
+               
             }
             else
             {
@@ -820,7 +902,7 @@ void IronFist::run()
         }
 
         // ============================================================
-        //  DRAW  (completely unchanged)
+        //  DRAW 
         // ============================================================
         if (state == STATE_PRESS_START) { drawPressStartScreen(window, font, blinkClock); window.display(); continue; }
         if (state == STATE_MENU) { drawMenuScreen(window, font, menuIndex);        window.display(); continue; }
@@ -833,7 +915,6 @@ void IronFist::run()
             window.display();
             continue;
         }
-        if (state == STATE_SCOREBOARD) { drawScoreboardScreen(window, font, sb, sbIndex); window.display(); continue; }
         if (state == STATE_INTRO) { drawIntroStage1Screen(window, font); window.display(); continue; }
         if (state == STATE_INTRO_STAGE2) { drawIntroStage2Screen(window, font); window.display(); continue; }
         if (state == STATE_INTRO_STAGE3) { drawIntroStage3Screen(window, font); window.display(); continue; }

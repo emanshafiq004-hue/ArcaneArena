@@ -1,4 +1,4 @@
-// WelcomeScreen.h
+//---------------------------------- ( WelcomeScreen.h )-----------------------------------------
 // AGGREGATION....holds GameWindow& (reference, doesn't own it)
 
 #pragma once

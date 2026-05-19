@@ -2,9 +2,9 @@
 //  Contains:
 //    ScoreEntry   (Operator Overloading)
 //    ScoreManager (Friend Class)
-//    FileManager  (Friend + Exception Handling)
 //    GameWorld    (Aggregation)
 
+#include "FileManager.h"
 #include "Globals.h"
 #include "Entities.h"
 #include "Obstacles.h"
@@ -34,9 +34,8 @@ struct ScoreEntry {
 };
 
 //___________CLASS: ScoreManager_____________
-//  Grants FileManager friend access to private members
+
 class ScoreManager {
-    friend class FileManager;
 
     int   score_ = 0;
     int   bestScore_ = 0;
@@ -72,21 +71,23 @@ public:
     float gapSize()     const;
 };
 
-//____________CLASS: FileManager_______________
-//____Friend of ScoreManager — uses try/catch for all I/O________
+//____________CLASS: FileManager (for ScoreEntry/SkySurge)_______________
+//  Handles scores and settings for SkySurge game (works with ScoreEntry)
+//  Uses try/catch for all file I/O operations
 
-class FileManager {
+class FileManager_SkySurge {
+private:
+    static constexpr const char* SCORE_FILE = "saves/skysurge_scores.dat";
+    static constexpr const char* SETTING_FILE = "saves/skysurge_settings.dat";
+    static constexpr int TOP5 = 5;
+
 public:
-    struct Settings { bool soundOn = true; };
-
     std::vector<ScoreEntry> loadScores();
     void saveScores(const std::vector<ScoreEntry>& entries);
     void addScore(const std::string& name, int score);
-
-    //__________Direct access to ScoreManager private member_________
-    int getBestFromManager(const ScoreManager& sm) const { return sm.bestScore_; }
     int getBestScoreFromFile();
 
+    struct Settings { bool soundOn = true; };
     Settings loadSettings();
     void     saveSettings(const Settings& s);
 };

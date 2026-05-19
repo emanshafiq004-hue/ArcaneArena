@@ -1,7 +1,6 @@
-// Inventory.h
+//-------------------------------------------- ( Inventory.h ) -------------------------------------------------------
 // COMPOSITION inside Veilwalker... Veilwalker "has an" Inventory.
-// Inventory cannot meaningfully exist without a Veilwalker owning it.
-
+// Inventory cannot meaningfully exist without a Veilwalker owning it....
 #pragma once
 #include <vector>
 #include <string>
@@ -9,16 +8,17 @@
 
 using namespace std;
 
-class Inventory {
+class Inventory 
+{
 private:
-    vector<Item> items;
-    static const int MAX_ITEMS = 20;
+vector<Item> items;
+static const int MAX_ITEMS = 20;
 public:
-    Inventory();
-    void addItem(const Item& item);
-    int useItem(int index);
-    const vector<Item>& getItems() const;
-    int getCount() const;
-    string serialize() const;
-    void deserialize(const string& data);
+Inventory();
+bool addItem(const Item& item);
+int useItem(int index);
+const vector<Item>& getItems() const;
+int getCount() const;
+string serialize() const;
+void deserialize(const string& data);
 };

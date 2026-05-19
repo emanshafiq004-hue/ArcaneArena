@@ -1,68 +1,67 @@
-// Veilwalker.cpp
-
+//------------------------------------------------ ( Veilwalker.cpp ) ----------------------------------------------------------------------
 #include "Veilwalker.h"
 #include <sstream>
 #include <stdexcept>
 #include <iostream>
 #include <algorithm>
+#include <tuple>
 
-Veilwalker::Veilwalker(const string& playerName):name(playerName),level(1),hp(100),maxHp(100),attackPower(15),defense(5),spiritEnergy(50),maxEnergy(50),xp(0),xpToNextLevel(100),coins(0)
+Veilwalker::Veilwalker(const string& playerName):name(playerName),level(1),hp(100),maxHp(100),attackPower(15),defense(5),spiritEnergy(100),maxEnergy(100),xp(0),xpToNextLevel(50),coins(0)
 {
-abilities.emplace_back("Spirit Strike",10,25,"Channel your veil energy into a focused strike.");
-cout<<"[Veilwalker] "<<name<< "enters the Veillands!\n";
-    // ---- Load sprite sheet for Veilwalker ----
-std::unordered_map<CharacterState, std::vector<int>> vwAnims;
-// Example layout: row 0: idle (frames 0-4), row 1: walk (5-10), row 2: attack (11-15), etc.
-// The user must verify the actual indices.
-vwAnims[CharacterState::Idle] = { 0,1,2,3,4 };
-vwAnims[CharacterState::Walk] = { 6,7,8,9,10,11 };
-vwAnims[CharacterState::Attack] = { 12,13,14,15,16 };
-vwAnims[CharacterState::Block] = { 18,19,20,21 };
-vwAnims[CharacterState::Ability] = { 24,25,26,27 };
-vwAnims[CharacterState::Item] = { 30,31,32,33 };
-vwAnims[CharacterState::Negotiate] = { 36,37 };       // if needed
-vwAnims[CharacterState::Dying] = { 42,43,44,45 };
-m_renderer.loadFromSheet("assets/characters/veilwalker.png",
-    sf::Vector2i(128, 128),    // frame size (adjust to actual)
-    vwAnims);
-// fallback – if load fails, the old static portrait is still loaded elsewhere,
-// but we'll keep the renderer uninitialized; Battle will handle that.
+abilities.emplace_back("SPIRIT STRIKE",10,20,"Channel your veil energy into a focused strike.");
+cout<<"[Veilwalker] "<<name<< " enters the Veillands!\n";
+std::unordered_map<CharacterState, std::tuple<std::string, sf::Vector2i, std::vector<int>>> vwAnims;
+vwAnims[CharacterState::Idle] = { "assets/characters/VIdle.png", { 128, 128 }, { 0, 1, 2, 3, 4, 5 } };
+vwAnims[CharacterState::Attack] = { "assets/characters/VAttack.png", { 128, 128 }, { 0, 1, 2, 3, 4, 5 } };
+vwAnims[CharacterState::Block] = { "assets/characters/VBlock.png", { 128, 128 }, { 0, 1, 2, 3, 4, 5 } };
+vwAnims[CharacterState::Walk] = { "assets/characters/VMove.png", { 128, 128 }, { 0, 1, 2, 3, 4, 5 } };
+vwAnims[CharacterState::Ability] = { "assets/characters/VAbility.png", { 128, 128 }, { 0, 1, 2, 3, 4} };
+vwAnims[CharacterState::Item] = { "assets/characters/VHeal.png", { 128, 128 }, { 0, 1, 2, 3, 4, 5 } };
+vwAnims[CharacterState::Dying] = { "assets/characters/VDie.png", { 128, 128 }, { 0, 1, 2, 3, 4, 5 } };
+m_renderer.loadMultipleStates(vwAnims);
 }
 
+//LEVEL UP:-
 void Veilwalker::levelUp() 
 {
 level++;
 maxHp+=20;
-hp=maxHp;   // Full heal on level up....
+hp=maxHp;// Full heal on level up....
 attackPower+=5;
-defense+=2;
+defense+=5;
 maxEnergy+=10;
 spiritEnergy=maxEnergy;
 xp-=xpToNextLevel;
-xpToNextLevel=static_cast<int>(xpToNextLevel*1.4f);
-cout <<"[Veilwalker] LEVEL UP! Now level "<< level << "\n";
+xpToNextLevel=static_cast<int>(xpToNextLevel*2.f);
+cout <<"[Veilwalker] LEVEL UP! Now level "<< level <<endl;
 checkAbilityUnlock();
 }
 
+//ABILITY UNLOCK CHECK:-
 void Veilwalker::checkAbilityUnlock() 
 {
 if (level==3) 
-abilities.emplace_back("Veil Burst",20,45,"Unleash a burst of veil energy.");
+abilities.emplace_back("VEIL BURST",20,40,"Unleash a burst of veil energy.");
 else if (level==5) 
-abilities.emplace_back("Shadow Bind",30,70,"Trap the spirit in shadow chains.");
+abilities.emplace_back("SHADOW BIND",30,70,"Trap the spirit in shadow chains.");
 else if (level==8) 
-abilities.emplace_back("Echoing Slash",40,100,"A slash that echoes through the spirit realm.");
+abilities.emplace_back("ECHOING SLASH",40,100,"A slash that echoes through the spirit realm.");
 }
 
+//GETTER:-
 int Veilwalker::attackEnemy() 
 { 
 return attackPower; 
 }
 
+//USE ABILITY:-
 int Veilwalker::useAbility(int index) 
 {
-if(index<0||index>=static_cast<int>(abilities.size()))
-throw out_of_range("Invalid ability index!");
+if (index < 0 || index >= static_cast<int>(abilities.size()))
+{
+cerr << "[Inventory] Invalid Ability index: " << index << ". Available Abilities: " << abilities.size() << endl;
+return -1;
+}
 const Ability& ab=abilities[index];
 if(spiritEnergy<ab.getEnergyCost()) 
 {
@@ -73,51 +72,56 @@ spiritEnergy-=ab.getEnergyCost();
 return ab.getDamage();
 }
 
+//TAKE DAMAGE :-
 void Veilwalker::takeDamage(int dmg) 
 {
 int actual=max(1,dmg-defense);
 hp-=actual;
-if(hp<0)hp=0;
+if(hp<0)
+hp=0;
 }
 
+//Take Raw Damage ...
 void Veilwalker::takeRawDamage(int dmg)
 {
-    if (dmg < 0)
-        dmg = 0;
-    hp -= dmg;
-    if (hp < 0)
-        hp = 0;
+if (dmg < 0)
+dmg = 0;
+hp -= dmg;
+if (hp < 0)
+hp = 0;
 }
 
+//Heal..
 void Veilwalker::heal(int amount) 
 { 
 hp=min(maxHp,hp+amount); 
 }
+
+//Restore Energy...
 void Veilwalker::restoreEnergy(int amount) 
 { 
 spiritEnergy=min(maxEnergy,spiritEnergy + amount); 
 }
 
+//Get Inventory..
 Inventory& Veilwalker::getInventory() 
 { 
 return inventory; 
 }
 
+//USE INVENTORY:-
 int Veilwalker::useItemFromInventory(int idx) 
 {
-try 
+int effect = inventory.useItem(idx);
+if (effect != -1) 
 {
-int effect=inventory.useItem(idx);
 heal(effect);
 return effect;
 }
-catch (const exception& e) 
-{
-cout <<"[Inventory Error] " <<e.what()<<"\n";
 return 0;
 }
-}
 
+//Gain XP..
 void Veilwalker::gainXP(int amount) 
 {
 xp += amount;
@@ -125,26 +129,30 @@ while(xp>=xpToNextLevel)
 levelUp();
 }
 
+//Get Coins..
 int Veilwalker::getCoins() const
 {
-    return coins;
+return coins;
 }
 
+//Add Coins.
 void Veilwalker::addCoins(int amount)
 {
-    if (amount > 0)
-        coins += amount;
+if (amount > 0)
+coins += amount;
 }
 
+//Remove Coins ...
 void Veilwalker::removeCoins(int amount)
 {
-    if (amount <= 0)
-        return;
-    coins -= amount;
-    if (coins < 0)
-        coins = 0;
+if (amount <= 0)
+return;
+coins -= amount;
+if (coins < 0)
+coins = 0;
 }
 
+//GETTERS:-
 string Veilwalker::getName()const 
 { 
 return name; 
@@ -194,6 +202,7 @@ const vector<Ability>& Veilwalker::getAbilities()const
 return abilities; 
 }
 
+//SERIALIZE:-
 string Veilwalker::serialize()const 
 {
 ostringstream oss;
@@ -201,18 +210,21 @@ oss << name << "|" << level << "|" << hp << "|"<< maxHp << "|" << attackPower <<
 return oss.str();
 }
 
+//SANITIZE NAME:-
 static void sanitizeName(string& n)
 {
-    string out;
-    out.reserve(n.size());
-    for (char c : n) {
-        if (c == '|' || c == '\r' || c == '\n')
-            continue;
-        out.push_back(c);
-    }
-    n = out.empty() ? string("Wanderer") : out;
+string out;
+out.reserve(n.size());
+for (char c : n) 
+{
+if (c == '|' || c == '\r' || c == '\n')
+continue;
+out.push_back(c);
+}
+n = out.empty() ? string("Wanderer") : out;
 }
 
+//DESERIALIZE:-
 void Veilwalker::deserialize(const string& data) 
 {
 istringstream ss(data);
@@ -220,7 +232,7 @@ string token;
 vector<string> parts;
 while (getline(ss, token, '|'))
 parts.push_back(token);
-if (parts.size()<11)
+if (parts.size()<11)//only check for imp data..
 throw runtime_error("Corrupt saved data for Veilwalker!");
 name = parts[0];
 sanitizeName(name);
@@ -236,18 +248,18 @@ xpToNextLevel=stoi(parts[9]);
 inventory.deserialize(parts[10]);
 coins = 0;
 if (parts.size() >= 12)
-    coins = stoi(parts[11]);
+coins = stoi(parts[11]);
 if (coins < 0)
-    coins = 0;
+coins = 0;
 abilities.clear();
-abilities.emplace_back("Spirit Strike",10,25,"Channel your veil energy.");
+abilities.emplace_back("SPIRIT STRIKE",10,20,"Channel your veil energy.");
 for (int i=2;i<=level;i++) 
 {
 if (i==3) 
-abilities.emplace_back("Veil Burst",20,45, "Unleash a burst of veil energy.");
+abilities.emplace_back("VEIL BURST",20,40, "Unleash a burst of veil energy.");
 if (i==5) 
-abilities.emplace_back("Shadow Bind",30,70,"Trap the spirit in shadow chains.");
+abilities.emplace_back("SHADOW BIND",30,70,"Trap the spirit in shadow chains.");
 if (i==8) 
-abilities.emplace_back("Echoing Slash",40,100,"A slash that echoes.");
+abilities.emplace_back("ECHOING SLASH",40,100,"A slash that echoes.");
 }
 }

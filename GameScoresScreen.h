@@ -1,11 +1,4 @@
 // GameScoresScreen.h
-// Scores & Status screen for Arcane Arena.
-// Shows a 2x2 grid of game tiles. First row: Realm of Echoes, Iron Fist.
-// Second row: Shatter Shift (placeholder), Sky Surge (placeholder).
-// Selecting a tile shows that game's scores. ESC returns from scores view.
-// Arrow keys + Enter + mouse all work for navigation.
-// Background uses assets/texture/utility.png.
-// Audio uses the same AudioManager as the main menu.
 
 #pragma once
 #include "GameWindow.h"

@@ -1,3 +1,4 @@
+//----------------------------------------- ( AssetLoader.h ) ------------------------------------------------
 #pragma once
 #include <SFML/Graphics.hpp>
 #include <optional>
@@ -6,7 +7,7 @@
 class AssetLoader 
 {
 public:
-//static because we call by class...no internal state
+//static because we call by class scope...no internal state
 //stateless utility class....
 //each load assets with fall back...
 static bool openFontWithFallback(sf::Font& font, const std::vector<std::string>& paths);

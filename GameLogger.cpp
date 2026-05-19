@@ -1,79 +1,4 @@
-﻿//#include "GameLogger.h"
-//#include <iostream>
-//#include <stdexcept>
-//#include "AssetLoader.h"
-//
-//using namespace std;
-//using namespace sf;
-//
-////CONSTRUCTOR:
-//GameLogger::GameLogger(const string& filePath) : logFilePath(filePath) 
-//{
-//ofstream testOpen(filePath, ios::app);
-//if (!testOpen.is_open())
-//throw runtime_error("GameLogger: Cannot open log file: " + filePath);//concatination
-//testOpen.close();
-//cout << "[GameLogger] Logger initialized. Log: " << filePath <<endl;
-//}
-//
-////DESTRUCTOR:
-//GameLogger::~GameLogger()
-//{
-//cout << "[GameLogger] Logger destroyed.\n";
-//}
-//
-////ASSOCIATION: GameLogger USES GameWindow temporarily to display messages.
-//void GameLogger::showMessage(GameWindow* gw,Font& font,const string& message,float seconds,Texture& texture,vector<string> path,optional<sf::Sprite> sprite,const int width,const int height) 
-//{
-//if (gw == nullptr)
-//throw invalid_argument("GameLogger::showMessage - null window pointer!");
-//AssetLoader::emplaceCoverSprite(texture, sprite, path, static_cast<float>(width), static_cast<float>(height));
-//if (!AssetLoader::openFontWithFallback(font, { "assets/font/ActionSpectral.ttf","assets/font/Philosopher-Bold.ttf" }))
-//throw runtime_error("GameLogger::showMessage - cannot load font!");
-//Text text(font);
-//text.setString(message);
-//text.setCharacterSize(32);
-//text.setFillColor(Color(212, 168, 92));
-//text.setOutlineColor(Color(52, 34, 26));
-//text.setOutlineThickness(3.0f);
-//FloatRect b = text.getLocalBounds();
-//text.setOrigin({ b.size.x / 2.f, b.size.y / 2.f });
-//text.setPosition({width*0.5f, height*0.45f });
-//Clock timer;
-//while (gw->isOpen() && timer.getElapsedTime().asSeconds() < seconds) 
-//{
-//while (auto event = gw->pollEvent()) 
-//{
-//if (event->is<Event::Closed>())
-//gw->getWindow().close();
-//}
-//gw->clear();
-//if (sprite)
-//gw->getWindow().draw(*sprite);
-//gw->getWindow().draw(text);
-//gw->display();
-//}
-//logToFile(message);
-//}
-//
-//// Also writes to log file...demonstrates FILE HANDLING.
-//void GameLogger::logToFile(const string& message) 
-//{
-//ofstream file(logFilePath, ios::app);
-//if (!file.is_open()) 
-//{
-//cerr << "[GameLogger] Warning: Could not write to log file.\n";
-//return;
-//}
-//file << message <<endl;
-//file.close();
-//}
-
-
-//----------------------------------------------------
-// GameLogger.cpp
-// FIX: sprite parameter is now a reference so AssetLoader::emplaceCoverSprite
-//      updates the caller's optional<Sprite>, not a local copy that gets discarded.
+﻿// GameLogger.cpp
 
 #include "GameLogger.h"
 #include "AssetLoader.h"
@@ -101,7 +26,6 @@ GameLogger::~GameLogger()
 
 // ── Show a timed full-screen message ─────────────────────────────────────────
 // ASSOCIATION: GameLogger USES GameWindow for one call only; does not store it.
-// FIX: sprite is passed by reference — AssetLoader modifies the caller's sprite.
 void GameLogger::showMessage(GameWindow* gw,
     Font& font,
     const string& message,

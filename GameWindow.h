@@ -1,9 +1,8 @@
-// GameWindow.h
+//-------------------------------- ( GameWindow.h ) -------------------------------------------
 // Central window wrapper. ONE object created in main(), shared via reference.
 // BASE utility class....all screens AGGREGATE this class (hold reference, don't own).
 
 #pragma once
-//#pragma once does this ...if not define then define it...
 #include <SFML/Graphics.hpp>
 #include"AudioManager.h"
 #include <optional>
@@ -18,7 +17,7 @@ private:
     string title;
     unsigned int width;
     unsigned int height;
-    AudioManager audio;//will call its own defsult constructor..
+    AudioManager audio;
 public:
     //constructor:
     GameWindow(const string& t="ARCANE ARENA",unsigned int w = 800,unsigned int h = 600);
