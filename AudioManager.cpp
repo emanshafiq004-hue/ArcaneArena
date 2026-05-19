@@ -51,7 +51,7 @@ music.stop();
 }
 
 //Stop Sound Effect:-
-void AudioManager::StopSound(string& key)
+void AudioManager::StopSound(string key)
 {
 for (int i = 0; i < 10; i++)
 {

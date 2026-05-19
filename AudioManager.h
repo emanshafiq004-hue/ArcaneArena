@@ -20,5 +20,5 @@ void playOptional(const std::string& key, float volume = 80.f);
 void PlayMusic(const std::string& path, float volume = 80.f);
 // Stop background music and sound effects.
 void Stop();
-void StopSound(std::string& key);
+void StopSound(std::string key);
 };
