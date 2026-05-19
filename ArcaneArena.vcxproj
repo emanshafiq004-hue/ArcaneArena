@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="utf-8"?>
+﻿<?xml version="1.0" encoding="utf-8"?>
 <Project DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <ItemGroup Label="ProjectConfigurations">
     <ProjectConfiguration Include="Debug|Win32">
@@ -144,13 +144,14 @@
     <ClCompile Include="Ability.cpp" />
     <ClCompile Include="Ball.cpp" />
     <ClCompile Include="Battle.cpp" />
+    <ClCompile Include="CharacterRenderer.cpp" />
     <ClCompile Include="Brick.cpp" />
     <ClCompile Include="combat.cpp" />
     <ClCompile Include="enemy.cpp" />
     <ClCompile Include="Entities.cpp" />
     <ClCompile Include="FileManager.cpp" />
     <ClCompile Include="GameLogger.cpp" />
-    <ClCompile Include="GameScreen.cpp" />
+    <ClCompile Include="GameScoresScreen.cpp" />
     <ClCompile Include="GameWindow.cpp" />
     <ClCompile Include="Globals.cpp" />
     <ClCompile Include="Inventory.cpp" />
@@ -184,13 +185,13 @@
     <ClInclude Include="Ability.h" />
     <ClInclude Include="Ball.h" />
     <ClInclude Include="Battle.h" />
-    <ClInclude Include="Brick.h" />
+    <ClInclude Include="CharacterRenderer.h" />
     <ClInclude Include="combat.h" />
     <ClInclude Include="enemy.h" />
     <ClInclude Include="Entities.h" />
     <ClInclude Include="FileManager.h" />
     <ClInclude Include="GameLogger.h" />
-    <ClInclude Include="Gamescreen.h" />
+    <ClInclude Include="GameScoresScreen.h" />
     <ClInclude Include="GameWindow.h" />
     <ClInclude Include="Globals.h" />
     <ClInclude Include="Inventory.h" />

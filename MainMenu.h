@@ -17,7 +17,7 @@
     vector<Text> menuItems;
     int selectedIndex;
     void updateHighlight();
-	AudioManager& Audio;
+	AudioManager& Audio;//AGGREGATION...
     public:
     static const int ITEM_COUNT = 6;
     MainMenu(GameWindow& window, AudioManager& audio);

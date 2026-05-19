@@ -9,10 +9,15 @@ Obstacle::Obstacle(Vec2 pos, float spd)
 }
 
 void Obstacle::update(float dt) {
+    //  On a fast computer (60fps) — dt = 0.016
+    //  On a slow computer (30fps) — dt = 0.033
     pos_.x -= speed_ * dt;
     animT_ += dt;
     if (pos_.x < -120.f) active_ = false;
 }
+//   Without dt → game speed depends on computer speed 
+//   With dt    → game speed is same on every computer 
+
 
 //  StormCloud
 

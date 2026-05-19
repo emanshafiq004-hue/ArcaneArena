@@ -196,7 +196,7 @@ public:
                             state = ::State::NameEntry;   // ask name first
                         if (btnHigh.rect.contains(p)) state = ::State::HighScore;
                         if (btnSet.rect.contains(p))  state = ::State::Settings;
-                        if (btnExit.rect.contains(p)) window.close();
+                        if (btnExit.rect.contains(p)) return;
                     }
 
                     // Dead screen

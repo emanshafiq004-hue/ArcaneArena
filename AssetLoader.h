@@ -12,7 +12,6 @@ public:
 static bool openFontWithFallback(sf::Font& font, const std::vector<std::string>& paths);
 static bool loadTextureWithFallback(sf::Texture& texture, const std::vector<std::string>& paths);
 static bool loadImageWithFallback(sf::Image& image, const std::vector<std::string>& paths);
-static bool emplaceCoverSprite(sf::Texture& texture, std::optional<sf::Sprite>& outSprite,
-const std::vector<std::string>& paths, float viewWidth, float viewHeight);
+static bool emplaceCoverSprite(sf::Texture& texture, std::optional<sf::Sprite>& outSprite,const std::vector<std::string>& paths, float viewWidth, float viewHeight);
 };
 

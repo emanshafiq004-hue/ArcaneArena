@@ -2,10 +2,12 @@
 
 #pragma once
 #include <SFML/Graphics.hpp>
+#include<iostream>
 #include <string>
 #include <vector>
 #include "Spirit.h"
 using namespace sf;
+using namespace std;
 
 enum class EncounterType {
     Battle,
